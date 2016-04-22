@@ -41,7 +41,7 @@
 using namespace llvm;
 
 static cl::opt<std::string>
-FuncName("Jasminfname", cl::desc("Specify the name of the generated function"),
+FuncName("jasminfname", cl::desc("Specify the name of the generated function"),
          cl::value_desc("function name"));
 
 enum WhatToGenerate {
@@ -55,7 +55,7 @@ enum WhatToGenerate {
   GenType
 };
 
-static cl::opt<WhatToGenerate> GenerationType("Jasmingen", cl::Optional,
+static cl::opt<WhatToGenerate> GenerationType("jasmingen", cl::Optional,
   cl::desc("Choose what kind of output to generate"),
   cl::init(GenProgram),
   cl::values(
@@ -71,7 +71,7 @@ static cl::opt<WhatToGenerate> GenerationType("Jasmingen", cl::Optional,
   )
 );
 
-static cl::opt<std::string> NameToGenerate("Jasminfor", cl::Optional,
+static cl::opt<std::string> NameToGenerate("jasminfor", cl::Optional,
   cl::desc("Specify the name of the thing to generate"),
   cl::init("!bad!"));
 
