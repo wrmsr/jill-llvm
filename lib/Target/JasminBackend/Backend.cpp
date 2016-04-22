@@ -28,18 +28,20 @@ char JVMWriter::ID = 0;
 
 void initializeJVMWriterPass(PassRegistry &Registry);
 
+/*
 INITIALIZE_PASS_BEGIN(JVMWriter, "JVMWriter", "JVMWriter", false, false)
 INITIALIZE_PASS_END(JVMWriter, "JVMWriter", "JVMWriter", false, false)
+*/
 
 JVMWriter::JVMWriter()
-  : FunctionPass(ID), out(llvm::ferrs()) {
-  llvm::initializeJVMWriterPass(*llvm::PassRegistry::getPassRegistry());
+  : FunctionPass(ID), out(ferrs()) {
+//  initializeJVMWriterPass(*PassRegistry::getPassRegistry());
 }
 
-JVMWriter::JVMWriter(const llvm::DataLayout *dl, llvm::formatted_raw_ostream &o,
+JVMWriter::JVMWriter(const DataLayout *dl, formatted_raw_ostream &o,
                      const std::string &cls, unsigned int dbg)
-  : FunctionPass(ID), dataLayout(dl), out(o), classname(cls), debug(dbg) {
-  llvm::initializeJVMWriterPass(*llvm::PassRegistry::getPassRegistry());
+  : FunctionPass(ID), out(o), classname(cls), debug(dbg), dataLayout(dl) {
+//  initializeJVMWriterPass(*PassRegistry::getPassRegistry());
 }
 
 /**
@@ -48,8 +50,8 @@ JVMWriter::JVMWriter(const llvm::DataLayout *dl, llvm::formatted_raw_ostream &o,
  * @param au  AnalysisUsage object representing the analysis usage information
  *            of this pass.
  */
-void JVMWriter::getAnalysisUsage(llvm::AnalysisUsage &au) const {
-  au.addRequired<llvm::LoopInfo>();
+void JVMWriter::getAnalysisUsage(AnalysisUsage &au) const {
+  au.addRequired<LoopInfoWrapperPass>();
   au.setPreservesAll();
 }
 
@@ -59,7 +61,7 @@ void JVMWriter::getAnalysisUsage(llvm::AnalysisUsage &au) const {
  * @param f  the function to process
  * @return   whether the function was modified (always false)
  */
-bool JVMWriter::runOnFunction(llvm::Function &f) {
+bool JVMWriter::runOnFunction(Function &f) {
   if (!f.isDeclaration() && !f.hasAvailableExternallyLinkage())
     printFunction(f);
   return false;
@@ -71,7 +73,7 @@ bool JVMWriter::runOnFunction(llvm::Function &f) {
  * @param m  the module
  * @return   whether the module was modified (always false)
  */
-bool JVMWriter::doInitialization(llvm::Module &m) {
+bool JVMWriter::doInitialization(Module &m) {
   module = &m;
   instNum = 0;
 
@@ -108,7 +110,7 @@ bool JVMWriter::doInitialization(llvm::Module &m) {
  * @param m  the module
  * @return   whether the module was modified (always false)
  */
-bool JVMWriter::doFinalization(llvm::Module &m) {
+bool JVMWriter::doFinalization(Module &m) {
   return false;
 }
 

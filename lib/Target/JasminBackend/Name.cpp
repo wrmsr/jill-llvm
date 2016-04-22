@@ -48,17 +48,17 @@ std::string JVMWriter::sanitizeName(std::string name) {
  * @param v  the value
  * @return   the name of the value
  */
-std::string JVMWriter::getValueName(const llvm::Value *v) {
-  if (const llvm::GlobalValue *gv = llvm::dyn_cast<llvm::GlobalValue>(v)) {
+std::string JVMWriter::getValueName(const Value *v) {
+  if (const GlobalValue *gv = dyn_cast<GlobalValue>(v)) {
     std::string s;
-    llvm::raw_string_ostream rso(s);
-    llvm::Mangler(dataLayout).getNameWithPrefix(rso, gv, false);
+    raw_string_ostream rso(s);
+    Mangler().getNameWithPrefix(rso, gv, false);
     return sanitizeName(s);
   }
   if (v->hasName())
     return '_' + sanitizeName(v->getName());
   if (localVars.count(v))
-    return '_' + llvm::utostr(getLocalVarNumber(v));
+    return '_' + utostr(getLocalVarNumber(v));
   return "_";
 }
 
@@ -68,8 +68,8 @@ std::string JVMWriter::getValueName(const llvm::Value *v) {
  * @param block  the block
  * @return       the label
  */
-std::string JVMWriter::getLabelName(const llvm::BasicBlock *block) {
+std::string JVMWriter::getLabelName(const BasicBlock *block) {
   if (!blockIDs.count(block))
     blockIDs[block] = blockIDs.size() + 1;
-  return sanitizeName("label" + llvm::utostr(blockIDs[block]));
+  return sanitizeName("label" + utostr(blockIDs[block]));
 }

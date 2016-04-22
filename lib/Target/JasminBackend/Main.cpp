@@ -26,8 +26,8 @@
 
 using namespace llvm;
 
-static llvm::cl::opt<std::string> input(llvm::cl::Positional, llvm::cl::desc("<input bitcode>"), llvm::cl::init("-"));
-static llvm::cl::opt<std::string> classname("classname", llvm::cl::desc("Binary name of the generated class"));
+static cl::opt<std::string> input(cl::Positional, cl::desc("<input bitcode>"), cl::init("-"));
+static cl::opt<std::string> classname("classname", cl::desc("Binary name of the generated class"));
 
 enum DebugLevel {
   g0 = 0,
@@ -36,10 +36,10 @@ enum DebugLevel {
   g3 = 3
 };
 
-llvm::cl::opt<DebugLevel> debugLevel(
-  llvm::cl::desc("Debugging level:"),
-  llvm::cl::init(g1),
-  llvm::cl::values(
+cl::opt<DebugLevel> debugLevel(
+  cl::desc("Debugging level:"),
+  cl::init(g1),
+  cl::values(
     clEnumValN(g2, "g", "Same as -g2"),
     clEnumVal(g0, "No debugging information"),
     clEnumVal(g1, "Source file and line number information (default)"),
@@ -48,37 +48,37 @@ llvm::cl::opt<DebugLevel> debugLevel(
     clEnumValEnd));
 
 int main(int argc, const char *const *argv) {
-  llvm::cl::ParseCommandLineOptions(argc, argv, "LLJVM Backend\n");
+  cl::ParseCommandLineOptions(argc, argv, "LLJVM Backend\n");
 
-  auto bufOrErr = llvm::MemoryBuffer::getFileOrSTDIN(input);
+  auto bufOrErr = MemoryBuffer::getFileOrSTDIN(input);
   if (bufOrErr.getError()) {
     std::cerr << "Unable to open bitcode file: " << bufOrErr.getError().message() << std::endl;
     return 1;
   }
   auto buf = std::move(bufOrErr.get());
 
-  auto modOrErr = llvm::parseBitcodeFile(buf->getMemBufferRef(), llvm::getGlobalContext());
+  auto modOrErr = parseBitcodeFile(buf->getMemBufferRef(), getGlobalContext());
   if (!modOrErr) {
     std::cerr << "Unable to parse bitcode file: " << modOrErr.getError().message() << std::endl;
     return 1;
   }
   auto *mod = std::move(modOrErr.get());
 
-  llvm::DataLayout dl(
+  DataLayout dl(
     "e-p:32:32:32"
       "-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64"
       "-f32:32:32-f64:64:64");
   mod->setDataLayout(&dl);
 
-  llvm::PassManager pm;
-  pm.add(new llvm::DataLayoutPass());
-  pm.add(llvm::createVerifierPass());
-  pm.add(llvm::createGCLoweringPass());
+  PassManager pm;
+  pm.add(new DataLayout());
+  pm.add(createVerifierPass());
+  pm.add(createGCLoweringPass());
   // TODO: fix switch generation so the following pass is not needed
-  pm.add(llvm::createLowerSwitchPass());
-  pm.add(llvm::createCFGSimplificationPass());
-  pm.add(new JVMWriter(&dl, llvm::fouts(), classname, debugLevel));
-  // pm.add(llvm::createGCInfoDeleter());
+  pm.add(createLowerSwitchPass());
+  pm.add(createCFGSimplificationPass());
+  pm.add(new JVMWriter(&dl, fouts(), classname, debugLevel));
+  // pm.add(createGCInfoDeleter());
   pm.run(*mod);
 
   return 0;

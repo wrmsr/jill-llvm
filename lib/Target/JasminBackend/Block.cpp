@@ -29,9 +29,9 @@ using namespace llvm;
  * 
  * @param block  the basic block
  */
-void JVMWriter::printBasicBlock(const llvm::BasicBlock *block) {
+void JVMWriter::printBasicBlock(const BasicBlock *block) {
   printLabel(getLabelName(block));
-  for (llvm::BasicBlock::const_iterator i = block->begin(), e = block->end();
+  for (BasicBlock::const_iterator i = block->begin(), e = block->end();
        i != e; i++) {
     instNum++;
     if (debug >= 3) {
@@ -39,7 +39,7 @@ void JVMWriter::printBasicBlock(const llvm::BasicBlock *block) {
       // note that this block of code significantly increases
       // code generation time
       std::string str;
-      llvm::raw_string_ostream ss(str);
+      raw_string_ostream ss(str);
       ss << *i;
       std::string::size_type pos = 0;
       while ((pos = str.find("\n", pos)) != std::string::npos)
@@ -47,17 +47,17 @@ void JVMWriter::printBasicBlock(const llvm::BasicBlock *block) {
       out << ';' << str << '\n';
     }
     if (debug >= 1)
-      printSimpleInstruction(".line", llvm::utostr(instNum));
+      printSimpleInstruction(".line", utostr(instNum));
 
-    if (i->getOpcode() == llvm::Instruction::PHI)
+    if (i->getOpcode() == Instruction::PHI)
       // don't handle phi instruction in current block
       continue;
-    printInstruction(i);
-    if (i->getType() != llvm::Type::getVoidTy(block->getContext())
-        && i->getOpcode() != llvm::Instruction::Invoke)
+    printInstruction(&*i);
+    if (i->getType() != Type::getVoidTy(block->getContext())
+        && i->getOpcode() != Instruction::Invoke)
       // instruction doesn't return anything, or is an invoke instruction
       // which handles storing the return value itself
-      printValueStore(i);
+      printValueStore(&*i);
   }
 }
 
@@ -66,12 +66,12 @@ void JVMWriter::printBasicBlock(const llvm::BasicBlock *block) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printInstruction(const llvm::Instruction *inst) {
-  const llvm::Value *left, *right;
+void JVMWriter::printInstruction(const Instruction *inst) {
+  const Value *left, *right;
   if (inst->getNumOperands() >= 1) left = inst->getOperand(0);
   if (inst->getNumOperands() >= 2) right = inst->getOperand(1);
   switch (inst->getOpcode()) {
-    case llvm::Instruction::Ret:
+    case Instruction::Ret:
       printSimpleInstruction("invokestatic",
                              "lljvm/runtime/Memory/destroyStackFrame()V");
       if (inst->getNumOperands() >= 1) {
@@ -82,96 +82,96 @@ void JVMWriter::printInstruction(const llvm::Instruction *inst) {
         printSimpleInstruction("return");
       }
       break;
-    // case llvm::Instruction::Unwind:
+    // case Instruction::Unwind:
     //   printSimpleInstruction("getstatic",
     //                          "lljvm/runtime/Instruction$Unwind/instance "
     //                            "Llljvm/runtime/Instruction$Unwind;");
     //   printSimpleInstruction("athrow");
     //   // TODO: need to destroy stack frames
     //   break;
-    case llvm::Instruction::Unreachable:
+    case Instruction::Unreachable:
       printSimpleInstruction("getstatic",
                              "lljvm/runtime/Instruction$Unreachable/instance "
                                "Llljvm/runtime/Instruction$Unreachable;");
       printSimpleInstruction("athrow");
       break;
-    case llvm::Instruction::Add:
-    case llvm::Instruction::FAdd:
-    case llvm::Instruction::Sub:
-    case llvm::Instruction::FSub:
-    case llvm::Instruction::Mul:
-    case llvm::Instruction::FMul:
-    case llvm::Instruction::UDiv:
-    case llvm::Instruction::SDiv:
-    case llvm::Instruction::FDiv:
-    case llvm::Instruction::URem:
-    case llvm::Instruction::SRem:
-    case llvm::Instruction::FRem:
-    case llvm::Instruction::And:
-    case llvm::Instruction::Or:
-    case llvm::Instruction::Xor:
-    case llvm::Instruction::Shl:
-    case llvm::Instruction::LShr:
-    case llvm::Instruction::AShr:
+    case Instruction::Add:
+    case Instruction::FAdd:
+    case Instruction::Sub:
+    case Instruction::FSub:
+    case Instruction::Mul:
+    case Instruction::FMul:
+    case Instruction::UDiv:
+    case Instruction::SDiv:
+    case Instruction::FDiv:
+    case Instruction::URem:
+    case Instruction::SRem:
+    case Instruction::FRem:
+    case Instruction::And:
+    case Instruction::Or:
+    case Instruction::Xor:
+    case Instruction::Shl:
+    case Instruction::LShr:
+    case Instruction::AShr:
       printArithmeticInstruction(inst->getOpcode(), left, right);
       break;
-    case llvm::Instruction::SExt:
-    case llvm::Instruction::Trunc:
-    case llvm::Instruction::ZExt:
-    case llvm::Instruction::FPTrunc:
-    case llvm::Instruction::FPExt:
-    case llvm::Instruction::UIToFP:
-    case llvm::Instruction::SIToFP:
-    case llvm::Instruction::FPToUI:
-    case llvm::Instruction::FPToSI:
-    case llvm::Instruction::PtrToInt:
-    case llvm::Instruction::IntToPtr:
-    case llvm::Instruction::BitCast:
+    case Instruction::SExt:
+    case Instruction::Trunc:
+    case Instruction::ZExt:
+    case Instruction::FPTrunc:
+    case Instruction::FPExt:
+    case Instruction::UIToFP:
+    case Instruction::SIToFP:
+    case Instruction::FPToUI:
+    case Instruction::FPToSI:
+    case Instruction::PtrToInt:
+    case Instruction::IntToPtr:
+    case Instruction::BitCast:
       printCastInstruction(inst->getOpcode(), left,
-                           llvm::cast<llvm::CastInst>(inst)->getDestTy(),
-                           llvm::cast<llvm::CastInst>(inst)->getSrcTy());
+                           cast<CastInst>(inst)->getDestTy(),
+                           cast<CastInst>(inst)->getSrcTy());
       break;
-    case llvm::Instruction::ICmp:
-    case llvm::Instruction::FCmp:
-      printCmpInstruction(llvm::cast<llvm::CmpInst>(inst)->getPredicate(),
+    case Instruction::ICmp:
+    case Instruction::FCmp:
+      printCmpInstruction(cast<CmpInst>(inst)->getPredicate(),
                           left, right);
       break;
-    case llvm::Instruction::Br:
-      printBranchInstruction(llvm::cast<llvm::BranchInst>(inst));
+    case Instruction::Br:
+      printBranchInstruction(cast<BranchInst>(inst));
       break;
-    case llvm::Instruction::Select:
+    case Instruction::Select:
       printSelectInstruction(inst->getOperand(0),
                              inst->getOperand(1),
                              inst->getOperand(2));
       break;
-    case llvm::Instruction::Load:
+    case Instruction::Load:
       printIndirectLoad(inst->getOperand(0));
       break;
-    case llvm::Instruction::Store:
+    case Instruction::Store:
       printIndirectStore(inst->getOperand(1), inst->getOperand(0));
       break;
-    case llvm::Instruction::GetElementPtr:
+    case Instruction::GetElementPtr:
       printGepInstruction(inst->getOperand(0),
                           gep_type_begin(inst),
                           gep_type_end(inst));
       break;
-    case llvm::Instruction::Call:
-      printCallInstruction(llvm::cast<llvm::CallInst>(inst));
+    case Instruction::Call:
+      printCallInstruction(cast<CallInst>(inst));
       break;
-    case llvm::Instruction::Invoke:
-      printInvokeInstruction(llvm::cast<llvm::InvokeInst>(inst));
+    case Instruction::Invoke:
+      printInvokeInstruction(cast<InvokeInst>(inst));
       break;
-    case llvm::Instruction::Switch:
-      printSwitchInstruction(llvm::cast<llvm::SwitchInst>(inst));
+    case Instruction::Switch:
+      printSwitchInstruction(cast<SwitchInst>(inst));
       break;
-    case llvm::Instruction::Alloca:
-      printAllocaInstruction(llvm::cast<llvm::AllocaInst>(inst));
+    case Instruction::Alloca:
+      printAllocaInstruction(cast<AllocaInst>(inst));
       break;
-    case llvm::Instruction::VAArg:
-      printVAArgInstruction(llvm::cast<llvm::VAArgInst>(inst));
+    case Instruction::VAArg:
+      printVAArgInstruction(cast<VAArgInst>(inst));
       break;
     default:
-      llvm::errs() << "Instruction = " << *inst << '\n';
+      errs() << "Instruction = " << *inst << '\n';
       llvm_unreachable("Unsupported instruction");
   }
 }

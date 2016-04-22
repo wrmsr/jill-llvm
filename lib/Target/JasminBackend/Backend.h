@@ -26,19 +26,21 @@
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Transforms/Scalar.h"
 
-class JVMWriter : public llvm::FunctionPass {
+namespace llvm {
+
+class JVMWriter : public FunctionPass {
 private:
-  llvm::formatted_raw_ostream &out;
+  formatted_raw_ostream &out;
   std::string sourcename;
   std::string classname;
   unsigned int debug;
-  llvm::Module *module;
-  const llvm::DataLayout *dataLayout;
+  Module *module;
+  const DataLayout *dataLayout;
   static char id;
 
-  llvm::DenseSet<const llvm::Value *> externRefs;
-  llvm::DenseMap<const llvm::BasicBlock *, unsigned int> blockIDs;
-  llvm::DenseMap<const llvm::Value *, unsigned int> localVars;
+  DenseSet<const Value *> externRefs;
+  DenseMap<const BasicBlock *, unsigned int> blockIDs;
+  DenseMap<const Value *, unsigned int> localVars;
   unsigned int usedRegisters;
   unsigned int vaArgNum;
   unsigned int instNum;
@@ -47,118 +49,118 @@ public:
   static char ID;
 
   JVMWriter();
-  JVMWriter(const llvm::DataLayout *dl, llvm::formatted_raw_ostream &o,
+  JVMWriter(const DataLayout *dl, formatted_raw_ostream &o,
             const std::string &cls, unsigned int dbg);
 
   virtual const char *getPassName() const override {
     return "JVMWriter";
   }
 
-  virtual bool doInitialization(llvm::Module &module) override;
-  virtual bool runOnFunction(llvm::Function &F) override;
-  virtual void getAnalysisUsage(llvm::AnalysisUsage &usage) const override;
-  virtual bool doFinalization(llvm::Module &module) override;
+  virtual bool doInitialization(Module &module) override;
+  virtual bool runOnFunction(Function &F) override;
+  virtual void getAnalysisUsage(AnalysisUsage &usage) const override;
+  virtual bool doFinalization(Module &module) override;
 
   // block.cpp
-  void printBasicBlock(const llvm::BasicBlock *block);
-  void printInstruction(const llvm::Instruction *inst);
+  void printBasicBlock(const BasicBlock *block);
+  void printInstruction(const Instruction *inst);
 
   // branch.cpp
-  void printPHICopy(const llvm::BasicBlock *src, const llvm::BasicBlock *dest);
-  void printBranchInstruction(const llvm::BasicBlock *curBlock,
-                              const llvm::BasicBlock *destBlock);
-  void printBranchInstruction(const llvm::BasicBlock *curBlock,
-                              const llvm::BasicBlock *trueBlock,
-                              const llvm::BasicBlock *falseBlock);
-  void printBranchInstruction(const llvm::BranchInst *inst);
-  void printSelectInstruction(const llvm::Value *cond,
-                              const llvm::Value *trueVal,
-                              const llvm::Value *falseVal);
-  void printSwitchInstruction(const llvm::SwitchInst *inst);
-  void printLoop(const llvm::Loop *l);
+  void printPHICopy(const BasicBlock *src, const BasicBlock *dest);
+  void printBranchInstruction(const BasicBlock *curBlock,
+                              const BasicBlock *destBlock);
+  void printBranchInstruction(const BasicBlock *curBlock,
+                              const BasicBlock *trueBlock,
+                              const BasicBlock *falseBlock);
+  void printBranchInstruction(const BranchInst *inst);
+  void printSelectInstruction(const Value *cond,
+                              const Value *trueVal,
+                              const Value *falseVal);
+  void printSwitchInstruction(const SwitchInst *inst);
+  void printLoop(const Loop *l);
 
   // const.cpp
   void printPtrLoad(uint64_t n);
-  void printConstLoad(const llvm::APInt &i);
+  void printConstLoad(const APInt &i);
   void printConstLoad(float f);
   void printConstLoad(double d);
-  void printConstLoad(const llvm::Constant *c);
+  void printConstLoad(const Constant *c);
   void printConstLoad(const std::string &str, bool cstring);
-  void printStaticConstant(const llvm::Constant *c);
-  void printConstantExpr(const llvm::ConstantExpr *ce);
+  void printStaticConstant(const Constant *c);
+  void printConstantExpr(const ConstantExpr *ce);
 
   // function.cpp
-  std::string getCallSignature(const llvm::FunctionType *ty);
-  void printOperandPack(const llvm::Instruction *inst,
+  std::string getCallSignature(const FunctionType *ty);
+  void printOperandPack(const Instruction *inst,
                         unsigned int minOperand,
                         unsigned int maxOperand);
-  void printFunctionCall(const llvm::Value *functionVal, const llvm::Instruction *inst);
-  void printIntrinsicCall(const llvm::IntrinsicInst *inst);
-  void printCallInstruction(const llvm::Instruction *inst);
-  void printInvokeInstruction(const llvm::InvokeInst *inst);
-  void printLocalVariable(const llvm::Function &f, const llvm::Instruction *inst);
-  void printFunctionBody(const llvm::Function &f);
-  unsigned int getLocalVarNumber(const llvm::Value *v);
+  void printFunctionCall(const Value *functionVal, const Instruction *inst);
+  void printIntrinsicCall(const IntrinsicInst *inst);
+  void printCallInstruction(const Instruction *inst);
+  void printInvokeInstruction(const InvokeInst *inst);
+  void printLocalVariable(const Function &f, const Instruction *inst);
+  void printFunctionBody(const Function &f);
+  unsigned int getLocalVarNumber(const Value *v);
   void printCatchJump(unsigned int numJumps);
-  void printFunction(const llvm::Function &f);
+  void printFunction(const Function &f);
 
   // instruction.cpp
   void printCmpInstruction(unsigned int predicate,
-                           const llvm::Value *left,
-                           const llvm::Value *right);
+                           const Value *left,
+                           const Value *right);
   void printArithmeticInstruction(unsigned int op,
-                                  const llvm::Value *left,
-                                  const llvm::Value *right);
-  void printBitCastInstruction(const llvm::Type *ty, const llvm::Type *srcTy);
+                                  const Value *left,
+                                  const Value *right);
+  void printBitCastInstruction(const Type *ty, const Type *srcTy);
   void printCastInstruction(const std::string &typePrefix,
                             const std::string &srcTypePrefix);
-  void printCastInstruction(unsigned int op, const llvm::Value *v,
-                            const llvm::Type *ty, const llvm::Type *srcTy);
-  void printGepInstruction(const llvm::Value *v,
-                           llvm::gep_type_iterator i,
-                           llvm::gep_type_iterator e);
-  void printAllocaInstruction(const llvm::AllocaInst *inst);
-  void printVAArgInstruction(const llvm::VAArgInst *inst);
-  void printVAIntrinsic(const llvm::IntrinsicInst *inst);
-  void printMemIntrinsic(const llvm::MemIntrinsic *inst);
-  void printMathIntrinsic(const llvm::IntrinsicInst *inst);
-  void printBitIntrinsic(const llvm::IntrinsicInst *inst);
+  void printCastInstruction(unsigned int op, const Value *v,
+                            const Type *ty, const Type *srcTy);
+  void printGepInstruction(const Value *v,
+                           gep_type_iterator i,
+                           gep_type_iterator e);
+  void printAllocaInstruction(const AllocaInst *inst);
+  void printVAArgInstruction(const VAArgInst *inst);
+  void printVAIntrinsic(const IntrinsicInst *inst);
+  void printMemIntrinsic(const MemIntrinsic *inst);
+  void printMathIntrinsic(const IntrinsicInst *inst);
+  void printBitIntrinsic(const IntrinsicInst *inst);
 
   // loadstore.cpp
-  void printValueLoad(const llvm::Value *v);
-  void printValueStore(const llvm::Value *v);
-  void printIndirectLoad(const llvm::Value *v);
-  void printIndirectLoad(const llvm::Type *ty);
-  void printIndirectStore(const llvm::Value *ptr, const llvm::Value *val);
-  void printIndirectStore(const llvm::Type *ty);
+  void printValueLoad(const Value *v);
+  void printValueStore(const Value *v);
+  void printIndirectLoad(const Value *v);
+  void printIndirectLoad(const Type *ty);
+  void printIndirectStore(const Value *ptr, const Value *val);
+  void printIndirectStore(const Type *ty);
 
   // name.cpp
   std::string sanitizeName(std::string name);
-  std::string getValueName(const llvm::Value *v);
-  std::string getLabelName(const llvm::BasicBlock *block);
+  std::string getValueName(const Value *v);
+  std::string getLabelName(const BasicBlock *block);
 
   // printinst.cpp
   void printBinaryInstruction(const char *name,
-                              const llvm::Value *left,
-                              const llvm::Value *right);
+                              const Value *left,
+                              const Value *right);
   void printBinaryInstruction(const std::string &name,
-                              const llvm::Value *left,
-                              const llvm::Value *right);
+                              const Value *left,
+                              const Value *right);
   void printSimpleInstruction(const char *inst);
   void printSimpleInstruction(const char *inst, const char *operand);
   void printSimpleInstruction(const std::string &inst);
   void printSimpleInstruction(const std::string &inst,
                               const std::string &operand);
   void printVirtualInstruction(const char *sig);
-  void printVirtualInstruction(const char *sig, const llvm::Value *operand);
+  void printVirtualInstruction(const char *sig, const Value *operand);
   void printVirtualInstruction(const char *sig,
-                               const llvm::Value *left,
-                               const llvm::Value *right);
+                               const Value *left,
+                               const Value *right);
   void printVirtualInstruction(const std::string &sig);
-  void printVirtualInstruction(const std::string &sig, const llvm::Value *operand);
+  void printVirtualInstruction(const std::string &sig, const Value *operand);
   void printVirtualInstruction(const std::string &sig,
-                               const llvm::Value *left,
-                               const llvm::Value *right);
+                               const Value *left,
+                               const Value *right);
   void printLabel(const char *label);
   void printLabel(const std::string &label);
 
@@ -171,15 +173,17 @@ public:
   void printMainMethod();
 
   // types.cpp
-  unsigned int getBitWidth(const llvm::Type *ty, bool expand = false);
-  char getTypeID(const llvm::Type *ty, bool expand = false);
-  std::string getTypeName(const llvm::Type *ty, bool expand = false);
-  std::string getTypeDescriptor(const llvm::Type *ty, bool expand = false);
-  std::string getTypePostfix(const llvm::Type *ty, bool expand = false);
-  std::string getTypePrefix(const llvm::Type *ty, bool expand = false);
+  unsigned int getBitWidth(const Type *ty, bool expand = false);
+  char getTypeID(const Type *ty, bool expand = false);
+  std::string getTypeName(const Type *ty, bool expand = false);
+  std::string getTypeDescriptor(const Type *ty, bool expand = false);
+  std::string getTypePostfix(const Type *ty, bool expand = false);
+  std::string getTypePrefix(const Type *ty, bool expand = false);
 };
 
-std::string ftostr(const llvm::APFloat &V);
+std::string ftostr(const APFloat &V);
 std::string ftostr(double V);
+
+}
 
 #endif

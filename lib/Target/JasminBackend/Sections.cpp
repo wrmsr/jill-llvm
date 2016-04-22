@@ -39,13 +39,13 @@ void JVMWriter::printHeader() {
  */
 void JVMWriter::printFields() {
   out << "; Fields\n";
-  for (llvm::Module::global_iterator i = module->global_begin(), e = module->global_end(); i != e; i++) {
+  for (Module::global_iterator i = module->global_begin(), e = module->global_end(); i != e; i++) {
     if (i->isDeclaration()) {
       out << ".extern field ";
-      externRefs.insert(i);
+      externRefs.insert(&*i);
     } else
       out << ".field " << (i->hasLocalLinkage() ? "private " : "public ") << "static final ";
-    out << getValueName(i) << ' ' << getTypeDescriptor(i->getType());
+    out << getValueName(&*i) << ' ' << getTypeDescriptor(i->getType());
     if (debug >= 3)
       out << " ; " << *i;
     else
@@ -59,10 +59,10 @@ void JVMWriter::printFields() {
  */
 void JVMWriter::printExternalMethods() {
   out << "; External methods\n";
-  for (llvm::Module::const_iterator i = module->begin(), e = module->end(); i != e; i++) {
+  for (Module::const_iterator i = module->begin(), e = module->end(); i != e; i++) {
     if (i->isDeclaration() && !i->isIntrinsic()) {
-      const llvm::Function *f = i;
-      const llvm::FunctionType *ty = f->getFunctionType();
+      const Function *f = &*i;
+      const FunctionType *ty = f->getFunctionType();
       out << ".extern method " << getValueName(f) << getCallSignature(ty);
       // FIXME:
       // if(debug >= 3)
@@ -94,12 +94,12 @@ void JVMWriter::printClInit() {
   printSimpleInstruction(".limit stack 4");
 
   out << "\n\t; allocate global variables\n";
-  for (llvm::Module::global_iterator i = module->global_begin(), e = module->global_end(); i != e; i++) {
+  for (Module::global_iterator i = module->global_begin(), e = module->global_end(); i != e; i++) {
     if (!i->isDeclaration()) {
-      const llvm::GlobalVariable *g = i;
-      const llvm::Constant *c = g->getInitializer();
+      const GlobalVariable *g = &*i;
+      const Constant *c = g->getInitializer();
       printConstLoad(
-        llvm::APInt(32, dataLayout->getTypeAllocSize(c->getType()), false));
+        APInt(32, dataLayout->getTypeAllocSize(c->getType()), false));
       printSimpleInstruction("invokestatic",
                              "lljvm/runtime/Memory/allocateData(I)I");
       printSimpleInstruction("putstatic",
@@ -108,10 +108,10 @@ void JVMWriter::printClInit() {
   }
 
   out << "\n\t; initialise global variables\n";
-  for (llvm::Module::global_iterator i = module->global_begin(), e = module->global_end(); i != e; i++) {
+  for (Module::global_iterator i = module->global_begin(), e = module->global_end(); i != e; i++) {
     if (!i->isDeclaration()) {
-      const llvm::GlobalVariable *g = i;
-      const llvm::Constant *c = g->getInitializer();
+      const GlobalVariable *g = &*i;
+      const Constant *c = g->getInitializer();
       printSimpleInstruction("getstatic",
                              classname + "/" + getValueName(g) + " I");
       printStaticConstant(c);
@@ -128,7 +128,7 @@ void JVMWriter::printClInit() {
  * Print the main method.
  */
 void JVMWriter::printMainMethod() {
-  const llvm::Function *f = module->getFunction("main");
+  const Function *f = module->getFunction("main");
   if (!f || f->isDeclaration())
     return;
 
@@ -138,11 +138,11 @@ void JVMWriter::printMainMethod() {
   if (f->arg_size() == 0) {
     printSimpleInstruction("invokestatic", classname + "/main()I");
   } else if (f->arg_size() == 2) {
-    llvm::Function::const_arg_iterator arg1, arg2;
+    Function::const_arg_iterator arg1, arg2;
     arg1 = arg2 = f->arg_begin();
     arg2++;
     if (!arg1->getType()->isIntegerTy()
-        || arg2->getType()->getTypeID() != llvm::Type::PointerTyID)
+        || arg2->getType()->getTypeID() != Type::PointerTyID)
       llvm_unreachable("main function has invalid type signature");
     printSimpleInstruction("aload_0");
     printSimpleInstruction("arraylength");

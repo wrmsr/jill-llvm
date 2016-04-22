@@ -29,8 +29,8 @@ using namespace llvm;
  * 
  * @param v  the value to load
  */
-void JVMWriter::printValueLoad(const llvm::Value *v) {
-  if (const llvm::Function *f = llvm::dyn_cast<llvm::Function>(v)) {
+void JVMWriter::printValueLoad(const Value *v) {
+  if (const Function *f = dyn_cast<Function>(v)) {
     std::string sig = getValueName(f)
                       + getCallSignature(f->getFunctionType());
     if (externRefs.count(v))
@@ -41,29 +41,29 @@ void JVMWriter::printValueLoad(const llvm::Value *v) {
     printSimpleInstruction("invokestatic",
                            "lljvm/runtime/Function/getFunctionPointer"
                              "(Ljava/lang/String;Ljava/lang/String;)I");
-  } else if (llvm::isa<llvm::GlobalVariable>(v)) {
-    const llvm::Type *ty = llvm::cast<llvm::PointerType>(v->getType())->getElementType();
+  } else if (isa<GlobalVariable>(v)) {
+    const Type *ty = cast<PointerType>(v->getType())->getElementType();
     if (externRefs.count(v))
       printSimpleInstruction("getstatic", getValueName(v) + " I");
     else
       printSimpleInstruction("getstatic",
                              classname + "/" + getValueName(v) + " I");
-  } else if (llvm::isa<llvm::ConstantPointerNull>(v)) {
+  } else if (isa<ConstantPointerNull>(v)) {
     printPtrLoad(0);
-  } else if (const llvm::ConstantExpr *ce = llvm::dyn_cast<llvm::ConstantExpr>(v)) {
+  } else if (const ConstantExpr *ce = dyn_cast<ConstantExpr>(v)) {
     printConstantExpr(ce);
-  } else if (const llvm::Constant *c = llvm::dyn_cast<llvm::Constant>(v)) {
+  } else if (const Constant *c = dyn_cast<Constant>(v)) {
     printConstLoad(c);
   } else {
     if (getLocalVarNumber(v) <= 3)
       printSimpleInstruction(
         getTypePrefix(v->getType(), true) + "load_"
-        + llvm::utostr(getLocalVarNumber(v))
+        + utostr(getLocalVarNumber(v))
         + " ; " + getValueName(v));
     else
       printSimpleInstruction(
         getTypePrefix(v->getType(), true) + "load",
-        llvm::utostr(getLocalVarNumber(v))
+        utostr(getLocalVarNumber(v))
         + " ; " + getValueName(v));
   }
 }
@@ -73,9 +73,9 @@ void JVMWriter::printValueLoad(const llvm::Value *v) {
  * 
  * @param v  the Value representing the local variable
  */
-void JVMWriter::printValueStore(const llvm::Value *v) {
-  if (llvm::isa<llvm::Function>(v) || llvm::isa<llvm::GlobalVariable>(v) || llvm::isa<llvm::Constant>(v)) {
-    llvm::errs() << "Value  = " << *v << '\n';
+void JVMWriter::printValueStore(const Value *v) {
+  if (isa<Function>(v) || isa<GlobalVariable>(v) || isa<Constant>(v)) {
+    errs() << "Value  = " << *v << '\n';
     llvm_unreachable("Invalid value");
   }
   unsigned int bitWidth = getBitWidth(v->getType());
@@ -91,12 +91,12 @@ void JVMWriter::printValueStore(const llvm::Value *v) {
   if (getLocalVarNumber(v) <= 3)
     printSimpleInstruction(
       getTypePrefix(v->getType(), true) + "store_"
-      + llvm::utostr(getLocalVarNumber(v))
+      + utostr(getLocalVarNumber(v))
       + " ; " + getValueName(v));
   else
     printSimpleInstruction(
       getTypePrefix(v->getType(), true) + "store",
-      llvm::utostr(getLocalVarNumber(v))
+      utostr(getLocalVarNumber(v))
       + " ; " + getValueName(v));
 }
 
@@ -105,10 +105,10 @@ void JVMWriter::printValueStore(const llvm::Value *v) {
  * 
  * @param v  the address
  */
-void JVMWriter::printIndirectLoad(const llvm::Value *v) {
+void JVMWriter::printIndirectLoad(const Value *v) {
   printValueLoad(v);
-  const llvm::Type *ty = v->getType();
-  if (const llvm::PointerType *p = llvm::dyn_cast<llvm::PointerType>(ty))
+  const Type *ty = v->getType();
+  if (const PointerType *p = dyn_cast<PointerType>(ty))
     ty = p->getElementType();
   printIndirectLoad(ty);
 }
@@ -119,7 +119,7 @@ void JVMWriter::printIndirectLoad(const llvm::Value *v) {
  * 
  * @param ty  the type of the value
  */
-void JVMWriter::printIndirectLoad(const llvm::Type *ty) {
+void JVMWriter::printIndirectLoad(const Type *ty) {
   printSimpleInstruction("invokestatic", "lljvm/runtime/Memory/load_"
                                          + getTypePostfix(ty) + "(I)" + getTypeDescriptor(ty));
 }
@@ -130,7 +130,7 @@ void JVMWriter::printIndirectLoad(const llvm::Type *ty) {
  * @param ptr  the address at which to store the value
  * @param val  the value to store
  */
-void JVMWriter::printIndirectStore(const llvm::Value *ptr, const llvm::Value *val) {
+void JVMWriter::printIndirectStore(const Value *ptr, const Value *val) {
   printValueLoad(ptr);
   printValueLoad(val);
   printIndirectStore(val->getType());
@@ -141,7 +141,7 @@ void JVMWriter::printIndirectStore(const llvm::Value *ptr, const llvm::Value *va
  * 
  * @param ty  the type of the value
  */
-void JVMWriter::printIndirectStore(const llvm::Type *ty) {
+void JVMWriter::printIndirectStore(const Type *ty) {
   printSimpleInstruction("invokestatic",
                          "lljvm/runtime/Memory/store(I" + getTypeDescriptor(ty) + ")V");
 }

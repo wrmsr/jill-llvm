@@ -32,8 +32,8 @@ using namespace llvm;
  * @param right  the second operand
  */
 void JVMWriter::printBinaryInstruction(const char *name,
-                                       const llvm::Value *left,
-                                       const llvm::Value *right) {
+                                       const Value *left,
+                                       const Value *right) {
   printValueLoad(left);
   printValueLoad(right);
   out << '\t' << name << '\n';
@@ -47,8 +47,8 @@ void JVMWriter::printBinaryInstruction(const char *name,
  * @param right  the second operand
  */
 void JVMWriter::printBinaryInstruction(const std::string &name,
-                                       const llvm::Value *left,
-                                       const llvm::Value *right) {
+                                       const Value *left,
+                                       const Value *right) {
   printValueLoad(left);
   printValueLoad(right);
   out << '\t' << name << '\n';
@@ -109,7 +109,7 @@ void JVMWriter::printVirtualInstruction(const char *sig) {
  * @param operand  the operand to the instruction
  */
 void JVMWriter::printVirtualInstruction(const char *sig,
-                                        const llvm::Value *operand) {
+                                        const Value *operand) {
   printValueLoad(operand);
   printVirtualInstruction(sig);
 }
@@ -122,8 +122,8 @@ void JVMWriter::printVirtualInstruction(const char *sig,
  * @param right  the second operand
  */
 void JVMWriter::printVirtualInstruction(const char *sig,
-                                        const llvm::Value *left,
-                                        const llvm::Value *right) {
+                                        const Value *left,
+                                        const Value *right) {
   printValueLoad(left);
   printValueLoad(right);
   printVirtualInstruction(sig);
@@ -145,7 +145,7 @@ void JVMWriter::printVirtualInstruction(const std::string &sig) {
  * @param operand  the operand to the instruction
  */
 void JVMWriter::printVirtualInstruction(const std::string &sig,
-                                        const llvm::Value *operand) {
+                                        const Value *operand) {
   printValueLoad(operand);
   printVirtualInstruction(sig);
 }
@@ -158,8 +158,8 @@ void JVMWriter::printVirtualInstruction(const std::string &sig,
  * @param right  the second operand
  */
 void JVMWriter::printVirtualInstruction(const std::string &sig,
-                                        const llvm::Value *left,
-                                        const llvm::Value *right) {
+                                        const Value *left,
+                                        const Value *right) {
   printValueLoad(left);
   printValueLoad(right);
   printVirtualInstruction(sig);

@@ -2,13 +2,13 @@
 
 using namespace llvm;
 
-std::string ftostr(const llvm::APFloat &V) {
+std::string ftostr(const APFloat &V) {
   std::string Buf;
-  if (&V.getSemantics() == &llvm::APFloat::IEEEdouble) {
-    llvm::raw_string_ostream(Buf) << V.convertToDouble();
+  if (&V.getSemantics() == &APFloat::IEEEdouble) {
+    raw_string_ostream(Buf) << V.convertToDouble();
     return Buf;
-  } else if (&V.getSemantics() == &llvm::APFloat::IEEEsingle) {
-    llvm::raw_string_ostream(Buf) << (double) V.convertToFloat();
+  } else if (&V.getSemantics() == &APFloat::IEEEsingle) {
+    raw_string_ostream(Buf) << (double) V.convertToFloat();
     return Buf;
   }
   return "<unknown format in ftostr>"; // error

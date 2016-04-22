@@ -30,9 +30,9 @@ using namespace llvm;
  * @param n  the value of the pointer
  */
 void JVMWriter::printPtrLoad(uint64_t n) {
-  if (module->getDataLayout()->getPointerSize() != 32)
+  if (module->getDataLayout().getPointerSize() != 32)
     llvm_unreachable("Only 32-bit pointers are allowed");
-  printConstLoad(llvm::APInt(32, n, false));
+  printConstLoad(APInt(32, n, false));
 }
 
 /**
@@ -40,7 +40,7 @@ void JVMWriter::printPtrLoad(uint64_t n) {
  * 
  * @param i  the integer
  */
-void JVMWriter::printConstLoad(const llvm::APInt &i) {
+void JVMWriter::printConstLoad(const APInt &i) {
   if (i.getBitWidth() <= 32) {
     int64_t value = i.getSExtValue();
     if (value == -1)
@@ -75,12 +75,12 @@ void JVMWriter::printConstLoad(float f) {
     printSimpleInstruction("fconst_1");
   else if (f == 2.0)
     printSimpleInstruction("fconst_2");
-  else if (llvm::IsNAN(f))
+  else if (isnan(f))
     printSimpleInstruction("getstatic", "java/lang/Float/NaN F");
-  else if (llvm::IsInf(f) > 0)
+  else if (isinf(f) > 0)
     printSimpleInstruction("getstatic",
                            "java/lang/Float/POSITIVE_INFINITY F");
-  else if (llvm::IsInf(f) < 0)
+  else if (isinf(f) < 0)
     printSimpleInstruction("getstatic",
                            "java/lang/Float/NEGATIVE_INFINITY F");
   else
@@ -97,12 +97,12 @@ void JVMWriter::printConstLoad(double d) {
     printSimpleInstruction("dconst_0");
   else if (d == 1.0)
     printSimpleInstruction("dconst_1");
-  else if (llvm::IsNAN(d))
+  else if (isnan(d))
     printSimpleInstruction("getstatic", "java/lang/Double/NaN D");
-  else if (llvm::IsInf(d) > 0)
+  else if (isinf(d) > 0)
     printSimpleInstruction("getstatic",
                            "java/lang/Double/POSITIVE_INFINITY D");
-  else if (llvm::IsInf(d) < 0)
+  else if (isinf(d) < 0)
     printSimpleInstruction("getstatic",
                            "java/lang/Double/NEGATIVE_INFINITY D");
   else
@@ -114,18 +114,18 @@ void JVMWriter::printConstLoad(double d) {
  * 
  * @param c  the constant
  */
-void JVMWriter::printConstLoad(const llvm::Constant *c) {
-  if (const llvm::ConstantInt *i = llvm::dyn_cast<llvm::ConstantInt>(c)) {
+void JVMWriter::printConstLoad(const Constant *c) {
+  if (const ConstantInt *i = dyn_cast<ConstantInt>(c)) {
     printConstLoad(i->getValue());
-  } else if (const llvm::ConstantFP *fp = llvm::dyn_cast<llvm::ConstantFP>(c)) {
-    if (fp->getType()->getTypeID() == llvm::Type::FloatTyID)
+  } else if (const ConstantFP *fp = dyn_cast<ConstantFP>(c)) {
+    if (fp->getType()->getTypeID() == Type::FloatTyID)
       printConstLoad(fp->getValueAPF().convertToFloat());
     else
       printConstLoad(fp->getValueAPF().convertToDouble());
-  } else if (llvm::isa<llvm::UndefValue>(c)) {
+  } else if (isa<UndefValue>(c)) {
     printPtrLoad(0);
   } else {
-    llvm::errs() << "Constant = " << *c << '\n';
+    errs() << "Constant = " << *c << '\n';
     llvm_unreachable("Invalid constant value");
   }
 }
@@ -175,7 +175,7 @@ void JVMWriter::printConstLoad(const std::string &str, bool cstring) {
     for (std::string::const_iterator i = str.begin(),
            e = str.end(); i != e; i++) {
       const char c = *i;
-      out << "\\u00" << llvm::hexdigit((c >> 4) & 0xf) << llvm::hexdigit(c & 0xf);
+      out << "\\u00" << hexdigit((c >> 4) & 0xf) << hexdigit(c & 0xf);
     }
   out << "\"\n";
 }
@@ -187,8 +187,8 @@ void JVMWriter::printConstLoad(const std::string &str, bool cstring) {
  * 
  * @param c  the constant
  */
-void JVMWriter::printStaticConstant(const llvm::Constant *c) {
-  if (llvm::isa<llvm::ConstantAggregateZero>(c) || c->isNullValue()) {
+void JVMWriter::printStaticConstant(const Constant *c) {
+  if (isa<ConstantAggregateZero>(c) || c->isNullValue()) {
     // zero initialised constant
     printPtrLoad(dataLayout->getTypeAllocSize(c->getType()));
     printSimpleInstruction("invokestatic",
@@ -197,15 +197,15 @@ void JVMWriter::printStaticConstant(const llvm::Constant *c) {
   }
   std::string typeDescriptor = getTypeDescriptor(c->getType());
   switch (c->getType()->getTypeID()) {
-    case llvm::Type::IntegerTyID:
-    case llvm::Type::FloatTyID:
-    case llvm::Type::DoubleTyID:
+    case Type::IntegerTyID:
+    case Type::FloatTyID:
+    case Type::DoubleTyID:
       printConstLoad(c);
       printSimpleInstruction("invokestatic",
                              "lljvm/runtime/Memory/pack(I" + typeDescriptor + ")I");
       break;
-    case llvm::Type::ArrayTyID:
-      if (const llvm::ConstantDataSequential *ca = llvm::dyn_cast<llvm::ConstantDataSequential>(
+    case Type::ArrayTyID:
+      if (const ConstantDataSequential *ca = dyn_cast<ConstantDataSequential>(
         c)) if (ca->isString()) {
         bool cstring = ca->isCString();
         printConstLoad(ca->getAsString(), cstring);
@@ -221,30 +221,30 @@ void JVMWriter::printStaticConstant(const llvm::Constant *c) {
         break;
       }
       // else fall through
-    case llvm::Type::VectorTyID:
-    case llvm::Type::StructTyID:
+    case Type::VectorTyID:
+    case Type::StructTyID:
       for (unsigned int i = 0, e = c->getNumOperands(); i < e; i++)
-        printStaticConstant(llvm::cast<llvm::Constant>(c->getOperand(i)));
+        printStaticConstant(cast<Constant>(c->getOperand(i)));
       break;
-    case llvm::Type::PointerTyID:
-      if (const llvm::Function *f = llvm::dyn_cast<llvm::Function>(c))
+    case Type::PointerTyID:
+      if (const Function *f = dyn_cast<Function>(c))
         printValueLoad(f);
-      else if (const llvm::GlobalVariable *g = llvm::dyn_cast<llvm::GlobalVariable>(c))
+      else if (const GlobalVariable *g = dyn_cast<GlobalVariable>(c))
         // initialise with address of global variable
         printValueLoad(g);
-      else if (llvm::isa<llvm::ConstantPointerNull>(c) || c->isNullValue())
+      else if (isa<ConstantPointerNull>(c) || c->isNullValue())
         printSimpleInstruction("iconst_0");
-      else if (const llvm::ConstantExpr *ce = llvm::dyn_cast<llvm::ConstantExpr>(c))
+      else if (const ConstantExpr *ce = dyn_cast<ConstantExpr>(c))
         printConstantExpr(ce);
       else {
-        llvm::errs() << "Constant = " << *c << '\n';
+        errs() << "Constant = " << *c << '\n';
         llvm_unreachable("Invalid static initializer");
       }
       printSimpleInstruction("invokestatic",
                              "lljvm/runtime/Memory/pack(I" + typeDescriptor + ")I");
       break;
     default:
-      llvm::errs() << "TypeID = " << c->getType()->getTypeID() << '\n';
+      errs() << "TypeID = " << c->getType()->getTypeID() << '\n';
       llvm_unreachable("Invalid type in printStaticConstant()");
   }
 }
@@ -254,57 +254,57 @@ void JVMWriter::printStaticConstant(const llvm::Constant *c) {
  * 
  * @param ce  the constant expression
  */
-void JVMWriter::printConstantExpr(const llvm::ConstantExpr *ce) {
-  const llvm::Value *left, *right;
+void JVMWriter::printConstantExpr(const ConstantExpr *ce) {
+  const Value *left, *right;
   if (ce->getNumOperands() >= 1) left = ce->getOperand(0);
   if (ce->getNumOperands() >= 2) right = ce->getOperand(1);
   switch (ce->getOpcode()) {
-    case llvm::Instruction::Trunc:
-    case llvm::Instruction::ZExt:
-    case llvm::Instruction::SExt:
-    case llvm::Instruction::FPTrunc:
-    case llvm::Instruction::FPExt:
-    case llvm::Instruction::UIToFP:
-    case llvm::Instruction::SIToFP:
-    case llvm::Instruction::FPToUI:
-    case llvm::Instruction::FPToSI:
-    case llvm::Instruction::PtrToInt:
-    case llvm::Instruction::IntToPtr:
-    case llvm::Instruction::BitCast:
+    case Instruction::Trunc:
+    case Instruction::ZExt:
+    case Instruction::SExt:
+    case Instruction::FPTrunc:
+    case Instruction::FPExt:
+    case Instruction::UIToFP:
+    case Instruction::SIToFP:
+    case Instruction::FPToUI:
+    case Instruction::FPToSI:
+    case Instruction::PtrToInt:
+    case Instruction::IntToPtr:
+    case Instruction::BitCast:
       printCastInstruction(ce->getOpcode(), left, ce->getType(), left->getType());
       break;
-    case llvm::Instruction::Add:
-    case llvm::Instruction::FAdd:
-    case llvm::Instruction::Sub:
-    case llvm::Instruction::FSub:
-    case llvm::Instruction::Mul:
-    case llvm::Instruction::FMul:
-    case llvm::Instruction::UDiv:
-    case llvm::Instruction::SDiv:
-    case llvm::Instruction::FDiv:
-    case llvm::Instruction::URem:
-    case llvm::Instruction::SRem:
-    case llvm::Instruction::FRem:
-    case llvm::Instruction::And:
-    case llvm::Instruction::Or:
-    case llvm::Instruction::Xor:
-    case llvm::Instruction::Shl:
-    case llvm::Instruction::LShr:
-    case llvm::Instruction::AShr:
+    case Instruction::Add:
+    case Instruction::FAdd:
+    case Instruction::Sub:
+    case Instruction::FSub:
+    case Instruction::Mul:
+    case Instruction::FMul:
+    case Instruction::UDiv:
+    case Instruction::SDiv:
+    case Instruction::FDiv:
+    case Instruction::URem:
+    case Instruction::SRem:
+    case Instruction::FRem:
+    case Instruction::And:
+    case Instruction::Or:
+    case Instruction::Xor:
+    case Instruction::Shl:
+    case Instruction::LShr:
+    case Instruction::AShr:
       printArithmeticInstruction(ce->getOpcode(), left, right);
       break;
-    case llvm::Instruction::ICmp:
-    case llvm::Instruction::FCmp:
+    case Instruction::ICmp:
+    case Instruction::FCmp:
       printCmpInstruction(ce->getPredicate(), left, right);
       break;
-    case llvm::Instruction::GetElementPtr:
+    case Instruction::GetElementPtr:
       printGepInstruction(ce->getOperand(0), gep_type_begin(ce), gep_type_end(ce));
       break;
-    case llvm::Instruction::Select:
+    case Instruction::Select:
       printSelectInstruction(ce->getOperand(0), ce->getOperand(1), ce->getOperand(2));
       break;
     default:
-      llvm::errs() << "Expression = " << *ce << '\n';
+      errs() << "Expression = " << *ce << '\n';
       llvm_unreachable("Invalid constant expression");
   }
 }

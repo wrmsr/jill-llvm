@@ -31,11 +31,11 @@ using namespace llvm;
  * @param expand  specifies whether to expand the type to 32 bits
  * @return        the bit width
  */
-unsigned int JVMWriter::getBitWidth(const llvm::Type *ty, bool expand) {
-  if (ty->getTypeID() == llvm::Type::ArrayTyID
-      || ty->getTypeID() == llvm::Type::VectorTyID
-      || ty->getTypeID() == llvm::Type::StructTyID
-      || ty->getTypeID() == llvm::Type::PointerTyID)
+unsigned int JVMWriter::getBitWidth(const Type *ty, bool expand) {
+  if (ty->getTypeID() == Type::ArrayTyID
+      || ty->getTypeID() == Type::VectorTyID
+      || ty->getTypeID() == Type::StructTyID
+      || ty->getTypeID() == Type::PointerTyID)
     return 32;
 
   unsigned int n = ty->getPrimitiveSizeInBits();
@@ -48,7 +48,7 @@ unsigned int JVMWriter::getBitWidth(const llvm::Type *ty, bool expand) {
     case 64:
       return n;
     default:
-      llvm::errs() << "Bits = " << n << '\n';
+      errs() << "Bits = " << n << '\n';
       llvm_unreachable("Unsupported integer width");
   }
 }
@@ -60,11 +60,11 @@ unsigned int JVMWriter::getBitWidth(const llvm::Type *ty, bool expand) {
  * @param expand  specifies whether to expand the type to 32 bits
  * @return        the type ID
  */
-char JVMWriter::getTypeID(const llvm::Type *ty, bool expand) {
+char JVMWriter::getTypeID(const Type *ty, bool expand) {
   switch (ty->getTypeID()) {
-    case llvm::Type::VoidTyID:
+    case Type::VoidTyID:
       return 'V';
-    case llvm::Type::IntegerTyID:
+    case Type::IntegerTyID:
       switch (getBitWidth(ty, expand)) {
         case 1:
           return 'Z';
@@ -77,18 +77,18 @@ char JVMWriter::getTypeID(const llvm::Type *ty, bool expand) {
         case 64:
           return 'J';
       }
-    case llvm::Type::FloatTyID:
+    case Type::FloatTyID:
       return 'F';
-    case llvm::Type::DoubleTyID:
+    case Type::DoubleTyID:
       return 'D';
-    case llvm::Type::PointerTyID:
-    case llvm::Type::StructTyID:
-    case llvm::Type::ArrayTyID:
-    case llvm::Type::VectorTyID:
+    case Type::PointerTyID:
+    case Type::StructTyID:
+    case Type::ArrayTyID:
+    case Type::VectorTyID:
       return 'I';
     default:
       // FIXME:
-      llvm::errs() << "Type = " << /* *ty */ "???" << '\n';
+      errs() << "Type = " << /* *ty */ "???" << '\n';
       llvm_unreachable("Invalid type");
   }
 }
@@ -100,7 +100,7 @@ char JVMWriter::getTypeID(const llvm::Type *ty, bool expand) {
  * @param expand  specifies whether to expand the type to 32 bits
  * @return        the type name
  */
-std::string JVMWriter::getTypeName(const llvm::Type *ty, bool expand) {
+std::string JVMWriter::getTypeName(const Type *ty, bool expand) {
   switch (getTypeID(ty, expand)) {
     case 'V':
       return "void";
@@ -119,7 +119,7 @@ std::string JVMWriter::getTypeName(const llvm::Type *ty, bool expand) {
     case 'D':
       return "double";
     default:
-      llvm::errs() << "TypeID = " << ty->getTypeID() << '\n';
+      errs() << "TypeID = " << ty->getTypeID() << '\n';
       llvm_unreachable("Invalid type");
   }
 }
@@ -131,7 +131,7 @@ std::string JVMWriter::getTypeName(const llvm::Type *ty, bool expand) {
  * @param expand  specifies whether to expand the type to 32 bits
  * @return        the type descriptor
  */
-std::string JVMWriter::getTypeDescriptor(const llvm::Type *ty, bool expand) {
+std::string JVMWriter::getTypeDescriptor(const Type *ty, bool expand) {
   return std::string() + getTypeID(ty, expand);
 }
 
@@ -142,23 +142,23 @@ std::string JVMWriter::getTypeDescriptor(const llvm::Type *ty, bool expand) {
  * @param expand  specifies whether to expand the type to 32 bits
  * @return        the type postfix
  */
-std::string JVMWriter::getTypePostfix(const llvm::Type *ty, bool expand) {
+std::string JVMWriter::getTypePostfix(const Type *ty, bool expand) {
   switch (ty->getTypeID()) {
-    case llvm::Type::VoidTyID:
+    case Type::VoidTyID:
       return "void";
-    case llvm::Type::IntegerTyID:
-      return "i" + llvm::utostr(getBitWidth(ty, expand));
-    case llvm::Type::FloatTyID:
+    case Type::IntegerTyID:
+      return "i" + utostr(getBitWidth(ty, expand));
+    case Type::FloatTyID:
       return "f32";
-    case llvm::Type::DoubleTyID:
+    case Type::DoubleTyID:
       return "f64";
-    case llvm::Type::PointerTyID:
-    case llvm::Type::StructTyID:
-    case llvm::Type::ArrayTyID:
-    case llvm::Type::VectorTyID:
+    case Type::PointerTyID:
+    case Type::StructTyID:
+    case Type::ArrayTyID:
+    case Type::VectorTyID:
       return "i32";
     default:
-      llvm::errs() << "TypeID = " << ty->getTypeID() << '\n';
+      errs() << "TypeID = " << ty->getTypeID() << '\n';
       llvm_unreachable("Invalid type");
   }
 }
@@ -170,7 +170,7 @@ std::string JVMWriter::getTypePostfix(const llvm::Type *ty, bool expand) {
  * @param expand  specifies whether to expand the type to 32 bits
  * @return        the type prefix
  */
-std::string JVMWriter::getTypePrefix(const llvm::Type *ty, bool expand) {
+std::string JVMWriter::getTypePrefix(const Type *ty, bool expand) {
   switch (getTypeID(ty, expand)) {
     case 'Z':
     case 'B':
@@ -188,7 +188,7 @@ std::string JVMWriter::getTypePrefix(const llvm::Type *ty, bool expand) {
     case 'V':
       llvm_unreachable("void has no prefix");
     default:
-      llvm::errs() << "TypeID = " << ty->getTypeID() << '\n';
+      errs() << "TypeID = " << ty->getTypeID() << '\n';
       llvm_unreachable("Invalid type");
   }
 }

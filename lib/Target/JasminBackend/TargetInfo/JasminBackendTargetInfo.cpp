@@ -10,9 +10,10 @@
 #include "JasminTargetMachine.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Support/TargetRegistry.h"
+
 using namespace llvm;
 
-Target llvm::TheJasminBackendTarget;
+Target TheJasminBackendTarget;
 
 static bool JasminBackend_TripleMatchQuality(Triple::ArchType Arch) {
   // This backend doesn't correspond to any architecture. It must be explicitly
@@ -21,7 +22,7 @@ static bool JasminBackend_TripleMatchQuality(Triple::ArchType Arch) {
 }
 
 extern "C" void LLVMInitializeJasminBackendTargetInfo() {
-  TargetRegistry::RegisterTarget(TheJasminBackendTarget, "jasmin",
+  TargetRegistry::RegisterTarget(llvm::TheJasminBackendTarget, "jasmin",
                                   "Jasmin backend",
                                   &JasminBackend_TripleMatchQuality);
 }

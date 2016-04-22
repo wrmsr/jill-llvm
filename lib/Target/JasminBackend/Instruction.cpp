@@ -42,84 +42,84 @@ static unsigned int alignOffset(unsigned int offset, unsigned int align) {
  * @param right      the second operand of the instruction
  */
 void JVMWriter::printCmpInstruction(unsigned int predicate,
-                                    const llvm::Value *left,
-                                    const llvm::Value *right) {
+                                    const Value *left,
+                                    const Value *right) {
   std::string inst;
   switch (predicate) {
-    case llvm::ICmpInst::ICMP_EQ:
+    case ICmpInst::ICMP_EQ:
       inst = "icmp_eq";
       break;
-    case llvm::ICmpInst::ICMP_NE:
+    case ICmpInst::ICMP_NE:
       inst = "icmp_ne";
       break;
-    case llvm::ICmpInst::ICMP_ULE:
+    case ICmpInst::ICMP_ULE:
       inst = "icmp_ule";
       break;
-    case llvm::ICmpInst::ICMP_SLE:
+    case ICmpInst::ICMP_SLE:
       inst = "icmp_sle";
       break;
-    case llvm::ICmpInst::ICMP_UGE:
+    case ICmpInst::ICMP_UGE:
       inst = "icmp_uge";
       break;
-    case llvm::ICmpInst::ICMP_SGE:
+    case ICmpInst::ICMP_SGE:
       inst = "icmp_sge";
       break;
-    case llvm::ICmpInst::ICMP_ULT:
+    case ICmpInst::ICMP_ULT:
       inst = "icmp_ult";
       break;
-    case llvm::ICmpInst::ICMP_SLT:
+    case ICmpInst::ICMP_SLT:
       inst = "icmp_slt";
       break;
-    case llvm::ICmpInst::ICMP_UGT:
+    case ICmpInst::ICMP_UGT:
       inst = "icmp_ugt";
       break;
-    case llvm::ICmpInst::ICMP_SGT:
+    case ICmpInst::ICMP_SGT:
       inst = "icmp_sgt";
       break;
-    case llvm::FCmpInst::FCMP_UGT:
+    case FCmpInst::FCMP_UGT:
       inst = "fcmp_ugt";
       break;
-    case llvm::FCmpInst::FCMP_OGT:
+    case FCmpInst::FCMP_OGT:
       inst = "fcmp_ogt";
       break;
-    case llvm::FCmpInst::FCMP_UGE:
+    case FCmpInst::FCMP_UGE:
       inst = "fcmp_uge";
       break;
-    case llvm::FCmpInst::FCMP_OGE:
+    case FCmpInst::FCMP_OGE:
       inst = "fcmp_oge";
       break;
-    case llvm::FCmpInst::FCMP_ULT:
+    case FCmpInst::FCMP_ULT:
       inst = "fcmp_ult";
       break;
-    case llvm::FCmpInst::FCMP_OLT:
+    case FCmpInst::FCMP_OLT:
       inst = "fcmp_olt";
       break;
-    case llvm::FCmpInst::FCMP_ULE:
+    case FCmpInst::FCMP_ULE:
       inst = "fcmp_ule";
       break;
-    case llvm::FCmpInst::FCMP_OLE:
+    case FCmpInst::FCMP_OLE:
       inst = "fcmp_ole";
       break;
-    case llvm::FCmpInst::FCMP_UEQ:
+    case FCmpInst::FCMP_UEQ:
       inst = "fcmp_ueq";
       break;
-    case llvm::FCmpInst::FCMP_OEQ:
+    case FCmpInst::FCMP_OEQ:
       inst = "fcmp_oeq";
       break;
-    case llvm::FCmpInst::FCMP_UNE:
+    case FCmpInst::FCMP_UNE:
       inst = "fcmp_une";
       break;
-    case llvm::FCmpInst::FCMP_ONE:
+    case FCmpInst::FCMP_ONE:
       inst = "fcmp_one";
       break;
-    case llvm::FCmpInst::FCMP_ORD:
+    case FCmpInst::FCMP_ORD:
       inst = "fcmp_ord";
       break;
-    case llvm::FCmpInst::FCMP_UNO:
+    case FCmpInst::FCMP_UNO:
       inst = "fcmp_uno";
       break;
     default:
-      llvm::errs() << "Predicate = " << predicate << '\n';
+      errs() << "Predicate = " << predicate << '\n';
       llvm_unreachable("Invalid cmp predicate");
   }
   printVirtualInstruction(
@@ -137,59 +137,59 @@ void JVMWriter::printCmpInstruction(unsigned int predicate,
  * @param right  the second operand of the instruction
  */
 void JVMWriter::printArithmeticInstruction(unsigned int op,
-                                           const llvm::Value *left,
-                                           const llvm::Value *right) {
+                                           const Value *left,
+                                           const Value *right) {
   printValueLoad(left);
   printValueLoad(right);
   std::string typePrefix = getTypePrefix(left->getType(), true);
   std::string typeDescriptor = getTypeDescriptor(left->getType());
   switch (op) {
-    case llvm::Instruction::Add:
-    case llvm::Instruction::FAdd:
+    case Instruction::Add:
+    case Instruction::FAdd:
       printSimpleInstruction(typePrefix + "add");
       break;
-    case llvm::Instruction::Sub:
-    case llvm::Instruction::FSub:
+    case Instruction::Sub:
+    case Instruction::FSub:
       printSimpleInstruction(typePrefix + "sub");
       break;
-    case llvm::Instruction::Mul:
-    case llvm::Instruction::FMul:
+    case Instruction::Mul:
+    case Instruction::FMul:
       printSimpleInstruction(typePrefix + "mul");
       break;
-    case llvm::Instruction::SDiv:
-    case llvm::Instruction::FDiv:
+    case Instruction::SDiv:
+    case Instruction::FDiv:
       printSimpleInstruction(typePrefix + "div");
       break;
-    case llvm::Instruction::SRem:
-    case llvm::Instruction::FRem:
+    case Instruction::SRem:
+    case Instruction::FRem:
       printSimpleInstruction(typePrefix + "rem");
       break;
-    case llvm::Instruction::And:
+    case Instruction::And:
       printSimpleInstruction(typePrefix + "and");
       break;
-    case llvm::Instruction::Or:
+    case Instruction::Or:
       printSimpleInstruction(typePrefix + "or");
       break;
-    case llvm::Instruction::Xor:
+    case Instruction::Xor:
       printSimpleInstruction(typePrefix + "xor");
       break;
-    case llvm::Instruction::Shl:
+    case Instruction::Shl:
       if (getBitWidth(right->getType()) == 64) printSimpleInstruction("l2i");
       printSimpleInstruction(typePrefix + "shl");
       break;
-    case llvm::Instruction::LShr:
+    case Instruction::LShr:
       if (getBitWidth(right->getType()) == 64) printSimpleInstruction("l2i");
       printSimpleInstruction(typePrefix + "ushr");
       break;
-    case llvm::Instruction::AShr:
+    case Instruction::AShr:
       if (getBitWidth(right->getType()) == 64) printSimpleInstruction("l2i");
       printSimpleInstruction(typePrefix + "shr");
       break;
-    case llvm::Instruction::UDiv:
+    case Instruction::UDiv:
       printVirtualInstruction(
         "udiv(" + typeDescriptor + typeDescriptor + ")" + typeDescriptor);
       break;
-    case llvm::Instruction::URem:
+    case Instruction::URem:
       printVirtualInstruction(
         "urem(" + typeDescriptor + typeDescriptor + ")" + typeDescriptor);
       break;
@@ -202,7 +202,7 @@ void JVMWriter::printArithmeticInstruction(unsigned int op,
  * @param ty     the destination type
  * @param srcTy  the source type
  */
-void JVMWriter::printBitCastInstruction(const llvm::Type *ty, const llvm::Type *srcTy) {
+void JVMWriter::printBitCastInstruction(const Type *ty, const Type *srcTy) {
   char typeID = getTypeID(ty);
   char srcTypeID = getTypeID(srcTy);
   if (srcTypeID == 'J' && typeID == 'D')
@@ -239,21 +239,21 @@ void JVMWriter::printCastInstruction(const std::string &typePrefix,
  * @param ty    the destination type
  * @param srcTy the source type
  */
-void JVMWriter::printCastInstruction(unsigned int op, const llvm::Value *v,
-                                     const llvm::Type *ty, const llvm::Type *srcTy) {
+void JVMWriter::printCastInstruction(unsigned int op, const Value *v,
+                                     const Type *ty, const Type *srcTy) {
   printValueLoad(v);
   switch (op) {
-    case llvm::Instruction::SIToFP:
-    case llvm::Instruction::FPToSI:
-    case llvm::Instruction::FPTrunc:
-    case llvm::Instruction::FPExt:
-    case llvm::Instruction::SExt:
+    case Instruction::SIToFP:
+    case Instruction::FPToSI:
+    case Instruction::FPTrunc:
+    case Instruction::FPExt:
+    case Instruction::SExt:
       if (getBitWidth(srcTy) < 32)
         printCastInstruction(getTypePrefix(srcTy), "i");
       printCastInstruction(getTypePrefix(ty, true),
                            getTypePrefix(srcTy, true));
       break;
-    case llvm::Instruction::Trunc:
+    case Instruction::Trunc:
       if (getBitWidth(srcTy) == 64 && getBitWidth(ty) < 32) {
         printSimpleInstruction("l2i");
         printCastInstruction(getTypePrefix(ty), "i");
@@ -261,30 +261,30 @@ void JVMWriter::printCastInstruction(unsigned int op, const llvm::Value *v,
         printCastInstruction(getTypePrefix(ty),
                              getTypePrefix(srcTy, true));
       break;
-    case llvm::Instruction::IntToPtr:
+    case Instruction::IntToPtr:
       printCastInstruction("i", getTypePrefix(srcTy, true));
       break;
-    case llvm::Instruction::PtrToInt:
+    case Instruction::PtrToInt:
       printCastInstruction(getTypePrefix(ty), "i");
       break;
-    case llvm::Instruction::ZExt:
+    case Instruction::ZExt:
       printVirtualInstruction("zext_" + getTypePostfix(ty, true)
                               + "(" + getTypeDescriptor(srcTy) + ")"
                               + getTypeDescriptor(ty, true));
       break;
-    case llvm::Instruction::UIToFP:
+    case Instruction::UIToFP:
       printVirtualInstruction("uitofp_" + getTypePostfix(ty)
                               + "(" + getTypeDescriptor(srcTy) + ")" + getTypeDescriptor(ty));
       break;
-    case llvm::Instruction::FPToUI:
+    case Instruction::FPToUI:
       printVirtualInstruction("fptoui_" + getTypePostfix(ty)
                               + "(" + getTypeDescriptor(srcTy) + ")" + getTypeDescriptor(ty));
       break;
-    case llvm::Instruction::BitCast:
+    case Instruction::BitCast:
       printBitCastInstruction(ty, srcTy);
       break;
     default:
-      llvm::errs() << "Opcode = " << op << '\n';
+      errs() << "Opcode = " << op << '\n';
       llvm_unreachable("Invalid cast instruction");
   }
 }
@@ -297,20 +297,20 @@ void JVMWriter::printCastInstruction(unsigned int op, const llvm::Value *v,
  * @param e  an iterator specifying the upper bound on the types indexed by the
  *           instruction
  */
-void JVMWriter::printGepInstruction(const llvm::Value *v,
-                                    llvm::gep_type_iterator i,
-                                    llvm::gep_type_iterator e) {
+void JVMWriter::printGepInstruction(const Value *v,
+                                    gep_type_iterator i,
+                                    gep_type_iterator e) {
   // load address
-  printCastInstruction(llvm::Instruction::IntToPtr, v, NULL, v->getType());
+  printCastInstruction(Instruction::IntToPtr, v, NULL, v->getType());
 
   // calculate offset
   for (; i != e; i++) {
     unsigned int size = 0;
-    const llvm::Value *indexValue = i.getOperand();
+    const Value *indexValue = i.getOperand();
 
-    if (const llvm::StructType *structTy = llvm::dyn_cast<llvm::StructType>(*i)) {
+    if (const StructType *structTy = dyn_cast<StructType>(*i)) {
       for (unsigned int f = 0,
-             fieldIndex = llvm::cast<llvm::ConstantInt>(indexValue)->getZExtValue();
+             fieldIndex = cast<ConstantInt>(indexValue)->getZExtValue();
            f < fieldIndex; f++)
         size = alignOffset(
           size + dataLayout->getTypeAllocSize(
@@ -320,12 +320,12 @@ void JVMWriter::printGepInstruction(const llvm::Value *v,
       printPtrLoad(size);
       printSimpleInstruction("iadd");
     } else {
-      if (const llvm::SequentialType *seqTy = llvm::dyn_cast<llvm::SequentialType>(*i))
+      if (const SequentialType *seqTy = dyn_cast<SequentialType>(*i))
         size = dataLayout->getTypeAllocSize(seqTy->getElementType());
       else
         size = dataLayout->getTypeAllocSize(*i);
 
-      if (const llvm::ConstantInt *c = llvm::dyn_cast<llvm::ConstantInt>(indexValue)) {
+      if (const ConstantInt *c = dyn_cast<ConstantInt>(indexValue)) {
         // constant optimisation
         if (c->isNullValue()) {
           // do nothing
@@ -338,7 +338,7 @@ void JVMWriter::printGepInstruction(const llvm::Value *v,
         }
       } else {
         printPtrLoad(size);
-        printCastInstruction(llvm::Instruction::IntToPtr, indexValue,
+        printCastInstruction(Instruction::IntToPtr, indexValue,
                              NULL, indexValue->getType());
         printSimpleInstruction("imul");
         printSimpleInstruction("iadd");
@@ -352,9 +352,9 @@ void JVMWriter::printGepInstruction(const llvm::Value *v,
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printAllocaInstruction(const llvm::AllocaInst *inst) {
+void JVMWriter::printAllocaInstruction(const AllocaInst *inst) {
   uint64_t size = dataLayout->getTypeAllocSize(inst->getAllocatedType());
-  if (const llvm::ConstantInt *c = llvm::dyn_cast<llvm::ConstantInt>(inst->getOperand(0))) {
+  if (const ConstantInt *c = dyn_cast<ConstantInt>(inst->getOperand(0))) {
     // constant optimization
     printPtrLoad(c->getZExtValue() * size);
   } else {
@@ -372,16 +372,16 @@ void JVMWriter::printAllocaInstruction(const llvm::AllocaInst *inst) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printVAArgInstruction(const llvm::VAArgInst *inst) {
+void JVMWriter::printVAArgInstruction(const VAArgInst *inst) {
   printIndirectLoad(inst->getOperand(0));
   printSimpleInstruction("dup");
   printConstLoad(
-    llvm::APInt(32, dataLayout->getTypeAllocSize(inst->getType()), false));
+    APInt(32, dataLayout->getTypeAllocSize(inst->getType()), false));
   printSimpleInstruction("iadd");
   printValueLoad(inst->getOperand(0));
   printSimpleInstruction("swap");
-  printIndirectStore(llvm::PointerType::getUnqual(
-    llvm::IntegerType::get(inst->getContext(), 8)));
+  printIndirectStore(PointerType::getUnqual(
+    IntegerType::get(inst->getContext(), 8)));
   printIndirectLoad(inst->getType());
 }
 
@@ -390,22 +390,22 @@ void JVMWriter::printVAArgInstruction(const llvm::VAArgInst *inst) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printVAIntrinsic(const llvm::IntrinsicInst *inst) {
-  const llvm::Type *valistTy = llvm::PointerType::getUnqual(
-    llvm::IntegerType::get(inst->getContext(), 8));
+void JVMWriter::printVAIntrinsic(const IntrinsicInst *inst) {
+  const Type *valistTy = PointerType::getUnqual(
+    IntegerType::get(inst->getContext(), 8));
   switch (inst->getIntrinsicID()) {
-    case llvm::Intrinsic::vastart:
+    case Intrinsic::vastart:
       printValueLoad(inst->getOperand(1));
-      printSimpleInstruction("iload", llvm::utostr(vaArgNum) + " ; varargptr");
+      printSimpleInstruction("iload", utostr(vaArgNum) + " ; varargptr");
       printIndirectStore(valistTy);
       break;
-    case llvm::Intrinsic::vacopy:
+    case Intrinsic::vacopy:
       printValueLoad(inst->getOperand(1));
       printValueLoad(inst->getOperand(2));
       printIndirectLoad(valistTy);
       printIndirectStore(valistTy);
       break;
-    case llvm::Intrinsic::vaend:
+    case Intrinsic::vaend:
       break;
   }
 }
@@ -415,11 +415,11 @@ void JVMWriter::printVAIntrinsic(const llvm::IntrinsicInst *inst) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printMemIntrinsic(const llvm::MemIntrinsic *inst) {
+void JVMWriter::printMemIntrinsic(const MemIntrinsic *inst) {
   printValueLoad(inst->getDest());
-  if (const llvm::MemTransferInst *minst = llvm::dyn_cast<llvm::MemTransferInst>(inst))
+  if (const MemTransferInst *minst = dyn_cast<MemTransferInst>(inst))
     printValueLoad(minst->getSource());
-  else if (const llvm::MemSetInst *minst = llvm::dyn_cast<llvm::MemSetInst>(inst))
+  else if (const MemSetInst *minst = dyn_cast<MemSetInst>(inst))
     printValueLoad(minst->getValue());
   printValueLoad(inst->getLength());
   printConstLoad(inst->getAlignmentCst());
@@ -427,15 +427,15 @@ void JVMWriter::printMemIntrinsic(const llvm::MemIntrinsic *inst) {
   std::string lenDescriptor = getTypeDescriptor(
     inst->getLength()->getType(), true);
   switch (inst->getIntrinsicID()) {
-    case llvm::Intrinsic::memcpy:
+    case Intrinsic::memcpy:
       printSimpleInstruction("invokestatic",
                              "lljvm/runtime/Memory/memcpy(II" + lenDescriptor + "I)V");
       break;
-    case llvm::Intrinsic::memmove:
+    case Intrinsic::memmove:
       printSimpleInstruction("invokestatic",
                              "lljvm/runtime/Memory/memmove(II" + lenDescriptor + "I)V");
       break;
-    case llvm::Intrinsic::memset:
+    case Intrinsic::memset:
       printSimpleInstruction("invokestatic",
                              "lljvm/runtime/Memory/memset(IB" + lenDescriptor + "I)V");
       break;
@@ -447,7 +447,7 @@ void JVMWriter::printMemIntrinsic(const llvm::MemIntrinsic *inst) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printMathIntrinsic(const llvm::IntrinsicInst *inst) {
+void JVMWriter::printMathIntrinsic(const IntrinsicInst *inst) {
   bool f32 = (getBitWidth(inst->getOperand(1)->getType()) == 32);
   printValueLoad(inst->getOperand(1));
   if (f32) printSimpleInstruction("f2d");
@@ -456,19 +456,19 @@ void JVMWriter::printMathIntrinsic(const llvm::IntrinsicInst *inst) {
     if (f32) printSimpleInstruction("f2d");
   }
   switch (inst->getIntrinsicID()) {
-    case llvm::Intrinsic::exp:
+    case Intrinsic::exp:
       printSimpleInstruction("invokestatic", "java/lang/Math/exp(D)D");
       break;
-    case llvm::Intrinsic::log:
+    case Intrinsic::log:
       printSimpleInstruction("invokestatic", "java/lang/Math/log(D)D");
       break;
-    case llvm::Intrinsic::log10:
+    case Intrinsic::log10:
       printSimpleInstruction("invokestatic", "java/lang/Math/log10(D)D");
       break;
-    case llvm::Intrinsic::sqrt:
+    case Intrinsic::sqrt:
       printSimpleInstruction("invokestatic", "java/lang/Math/sqrt(D)D");
       break;
-    case llvm::Intrinsic::pow:
+    case Intrinsic::pow:
       printSimpleInstruction("invokestatic", "java/lang/Math/pow(DD)D");
       break;
   }
@@ -480,12 +480,12 @@ void JVMWriter::printMathIntrinsic(const llvm::IntrinsicInst *inst) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printBitIntrinsic(const llvm::IntrinsicInst *inst) {
+void JVMWriter::printBitIntrinsic(const IntrinsicInst *inst) {
   // TODO: ctpop, ctlz, cttz
-  const llvm::Value *value = inst->getOperand(1);
+  const Value *value = inst->getOperand(1);
   const std::string typeDescriptor = getTypeDescriptor(value->getType());
   switch (inst->getIntrinsicID()) {
-    case llvm::Intrinsic::bswap:
+    case Intrinsic::bswap:
       printVirtualInstruction(
         "bswap(" + typeDescriptor + ")" + typeDescriptor, value);
       break;

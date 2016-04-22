@@ -41,7 +41,7 @@ static uint64_t getUID() {
  * @param ty  the function type
  * @return    the call signature
  */
-std::string JVMWriter::getCallSignature(const llvm::FunctionType *ty) {
+std::string JVMWriter::getCallSignature(const FunctionType *ty) {
   if (ty->isVarArg() && ty->getNumParams() == 0)
     // non-prototyped function
     return "";
@@ -63,7 +63,7 @@ std::string JVMWriter::getCallSignature(const llvm::FunctionType *ty) {
  * @param minOperand  the lower bound on the operands to pack (inclusive)
  * @param maxOperand  the upper bound on the operands to pack (exclusive)
  */
-void JVMWriter::printOperandPack(const llvm::Instruction *inst,
+void JVMWriter::printOperandPack(const Instruction *inst,
                                  unsigned int minOperand,
                                  unsigned int maxOperand) {
   unsigned int size = 0;
@@ -71,13 +71,13 @@ void JVMWriter::printOperandPack(const llvm::Instruction *inst,
     size += dataLayout->getTypeAllocSize(
       inst->getOperand(i)->getType());
 
-  printSimpleInstruction("bipush", llvm::utostr(size));
+  printSimpleInstruction("bipush", utostr(size));
   printSimpleInstruction("invokestatic",
                          "lljvm/runtime/Memory/allocateStack(I)I");
   printSimpleInstruction("dup");
 
   for (unsigned int i = minOperand; i < maxOperand; i++) {
-    const llvm::Value *v = inst->getOperand(i);
+    const Value *v = inst->getOperand(i);
     printValueLoad(v);
     printSimpleInstruction("invokestatic",
                            "lljvm/runtime/Memory/pack(I"
@@ -92,11 +92,11 @@ void JVMWriter::printOperandPack(const llvm::Instruction *inst,
  * @param functionVal  the function to call
  * @param inst         the instruction
  */
-void JVMWriter::printFunctionCall(const llvm::Value *functionVal,
-                                  const llvm::Instruction *inst) {
-  unsigned int origin = llvm::isa<llvm::InvokeInst>(inst) ? 3 : 1;
-  if (const llvm::Function *f = llvm::dyn_cast<llvm::Function>(functionVal)) { // direct call
-    const llvm::FunctionType *ty = f->getFunctionType();
+void JVMWriter::printFunctionCall(const Value *functionVal,
+                                  const Instruction *inst) {
+  unsigned int origin = isa<InvokeInst>(inst) ? 3 : 1;
+  if (const Function *f = dyn_cast<Function>(functionVal)) { // direct call
+    const FunctionType *ty = f->getFunctionType();
 
     //for(unsigned int i = origin, e = inst->getNumOperands(); i < e; i++)
     //    printValueLoad(inst->getOperand(i));
@@ -116,14 +116,14 @@ void JVMWriter::printFunctionCall(const llvm::Value *functionVal,
 
     if (getValueName(f) == "setjmp") {
       unsigned int varNum = usedRegisters++;
-      printSimpleInstruction("istore", llvm::utostr(varNum));
+      printSimpleInstruction("istore", utostr(varNum));
       printSimpleInstruction("iconst_0");
-      printLabel("setjmp$" + llvm::utostr(varNum));
+      printLabel("setjmp$" + utostr(varNum));
     }
   } else { // indirect call
     printValueLoad(functionVal);
-    const llvm::FunctionType *ty = llvm::cast<llvm::FunctionType>(
-      llvm::cast<llvm::PointerType>(functionVal->getType())->getElementType());
+    const FunctionType *ty = cast<FunctionType>(
+      cast<PointerType>(functionVal->getType())->getElementType());
     printOperandPack(inst, origin, inst->getNumOperands());
     printSimpleInstruction("invokestatic",
                            "lljvm/runtime/Function/invoke_"
@@ -137,36 +137,36 @@ void JVMWriter::printFunctionCall(const llvm::Value *functionVal,
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printIntrinsicCall(const llvm::IntrinsicInst *inst) {
+void JVMWriter::printIntrinsicCall(const IntrinsicInst *inst) {
   switch (inst->getIntrinsicID()) {
-    case llvm::Intrinsic::vastart:
-    case llvm::Intrinsic::vacopy:
-    case llvm::Intrinsic::vaend:
+    case Intrinsic::vastart:
+    case Intrinsic::vacopy:
+    case Intrinsic::vaend:
       printVAIntrinsic(inst);
       break;
-    case llvm::Intrinsic::memcpy:
-    case llvm::Intrinsic::memmove:
-    case llvm::Intrinsic::memset:
-      printMemIntrinsic(llvm::cast<llvm::MemIntrinsic>(inst));
+    case Intrinsic::memcpy:
+    case Intrinsic::memmove:
+    case Intrinsic::memset:
+      printMemIntrinsic(cast<MemIntrinsic>(inst));
       break;
-    case llvm::Intrinsic::flt_rounds:
+    case Intrinsic::flt_rounds:
       printSimpleInstruction("iconst_m1");
       break;
-    case llvm::Intrinsic::dbg_declare:
+    case Intrinsic::dbg_declare:
       // ignore debugging intrinsics
       break;
-    case llvm::Intrinsic::pow:
-    case llvm::Intrinsic::exp:
-    case llvm::Intrinsic::log10:
-    case llvm::Intrinsic::log:
-    case llvm::Intrinsic::sqrt:
+    case Intrinsic::pow:
+    case Intrinsic::exp:
+    case Intrinsic::log10:
+    case Intrinsic::log:
+    case Intrinsic::sqrt:
       printMathIntrinsic(inst);
       break;
-    case llvm::Intrinsic::bswap:
+    case Intrinsic::bswap:
       printBitIntrinsic(inst);
       break;
     default:
-      llvm::errs() << "Intrinsic = " << *inst << '\n';
+      errs() << "Intrinsic = " << *inst << '\n';
       llvm_unreachable("Invalid intrinsic function");
   }
 }
@@ -176,9 +176,9 @@ void JVMWriter::printIntrinsicCall(const llvm::IntrinsicInst *inst) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printCallInstruction(const llvm::Instruction *inst) {
-  if (llvm::isa<llvm::IntrinsicInst>(inst))
-    printIntrinsicCall(llvm::cast<llvm::IntrinsicInst>(inst));
+void JVMWriter::printCallInstruction(const Instruction *inst) {
+  if (isa<IntrinsicInst>(inst))
+    printIntrinsicCall(cast<IntrinsicInst>(inst));
   else
     printFunctionCall(inst->getOperand(0), inst);
 }
@@ -188,8 +188,8 @@ void JVMWriter::printCallInstruction(const llvm::Instruction *inst) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printInvokeInstruction(const llvm::InvokeInst *inst) {
-  std::string labelname = llvm::utostr(getUID()) + "$invoke";
+void JVMWriter::printInvokeInstruction(const InvokeInst *inst) {
+  std::string labelname = utostr(getUID()) + "$invoke";
   printLabel(labelname + "_begin");
   printFunctionCall(inst->getOperand(0), inst);
   if (!inst->getType()->isVoidTy())
@@ -212,24 +212,24 @@ void JVMWriter::printInvokeInstruction(const llvm::InvokeInst *inst) {
  * @param f     the parent function of the variable
  * @param inst  the instruction assigned to the variable
  */
-void JVMWriter::printLocalVariable(const llvm::Function &f,
-                                   const llvm::Instruction *inst) {
-  const llvm::Type *ty;
-  if (llvm::isa<llvm::AllocaInst>(inst) && !llvm::isa<llvm::GlobalVariable>(inst))
+void JVMWriter::printLocalVariable(const Function &f,
+                                   const Instruction *inst) {
+  const Type *ty;
+  if (isa<AllocaInst>(inst) && !isa<GlobalVariable>(inst))
     // local variable allocation
-    ty = llvm::PointerType::getUnqual(
-      llvm::cast<llvm::AllocaInst>(inst)->getAllocatedType());
+    ty = PointerType::getUnqual(
+      cast<AllocaInst>(inst)->getAllocatedType());
   else // operation result
     ty = inst->getType();
   // getLocalVarNumber must be called at least once in this method
   unsigned int varNum = getLocalVarNumber(inst);
   if (debug >= 2)
-    printSimpleInstruction(".var " + llvm::utostr(varNum) + " is "
+    printSimpleInstruction(".var " + utostr(varNum) + " is "
                            + getValueName(inst) + ' ' + getTypeDescriptor(ty)
                            + " from begin_method to end_method");
   // initialise variable to avoid class verification errors
   printSimpleInstruction(getTypePrefix(ty, true) + "const_0");
-  printSimpleInstruction(getTypePrefix(ty, true) + "store", llvm::utostr(varNum));
+  printSimpleInstruction(getTypePrefix(ty, true) + "store", utostr(varNum));
 }
 
 /**
@@ -237,13 +237,13 @@ void JVMWriter::printLocalVariable(const llvm::Function &f,
  * 
  * @param f  the function
  */
-void JVMWriter::printFunctionBody(const llvm::Function &f) {
-  for (llvm::Function::const_iterator i = f.begin(), e = f.end(); i != e; i++) {
-    if (llvm::Loop *l = getAnalysis<llvm::LoopInfo>().getLoopFor(i)) {
+void JVMWriter::printFunctionBody(const Function &f) {
+  for (Function::const_iterator i = f.begin(), e = f.end(); i != e; i++) {
+    if (Loop *l = getAnalysis<LoopInfoWrapperPass>().getLoopInfo().getLoopFor(&*i)) {
       if (l->getHeader() == i && l->getParentLoop() == 0)
         printLoop(l);
     } else
-      printBasicBlock(i);
+      printBasicBlock(&*i);
   }
 }
 
@@ -254,7 +254,7 @@ void JVMWriter::printFunctionBody(const llvm::Function &f) {
  * @param v  the value
  * @return   the local variable number
  */
-unsigned int JVMWriter::getLocalVarNumber(const llvm::Value *v) {
+unsigned int JVMWriter::getLocalVarNumber(const Value *v) {
   if (!localVars.count(v)) {
     localVars[v] = usedRegisters++;
     if (getBitWidth(v->getType()) == 64)
@@ -273,24 +273,24 @@ void JVMWriter::printCatchJump(unsigned int numJumps) {
   printSimpleInstruction(".catch lljvm/runtime/Jump "
                            "from begin_method to catch_jump using catch_jump");
   printLabel("catch_jump");
-  printSimpleInstruction("astore", llvm::utostr(jumpVarNum));
-  printSimpleInstruction("aload", llvm::utostr(jumpVarNum));
+  printSimpleInstruction("astore", utostr(jumpVarNum));
+  printSimpleInstruction("aload", utostr(jumpVarNum));
   printSimpleInstruction("getfield", "lljvm/runtime/Jump/value I");
   for (unsigned int i = usedRegisters - 1 - numJumps,
          e = usedRegisters - 1; i < e; i++) {
     if (debug >= 2)
-      printSimpleInstruction(".var " + llvm::utostr(i) + " is setjmp_id_"
-                             + llvm::utostr(i) + " I from begin_method to end_method");
-    printSimpleInstruction("aload", llvm::utostr(jumpVarNum));
+      printSimpleInstruction(".var " + utostr(i) + " is setjmp_id_"
+                             + utostr(i) + " I from begin_method to end_method");
+    printSimpleInstruction("aload", utostr(jumpVarNum));
     printSimpleInstruction("getfield", "lljvm/runtime/Jump/id I");
-    printSimpleInstruction("iload", llvm::utostr(i));
-    printSimpleInstruction("if_icmpeq", "setjmp$" + llvm::utostr(i));
+    printSimpleInstruction("iload", utostr(i));
+    printSimpleInstruction("if_icmpeq", "setjmp$" + utostr(i));
   }
   printSimpleInstruction("pop");
-  printSimpleInstruction("aload", llvm::utostr(jumpVarNum));
+  printSimpleInstruction("aload", utostr(jumpVarNum));
   printSimpleInstruction("athrow");
   if (debug >= 2)
-    printSimpleInstruction(".var " + llvm::utostr(jumpVarNum) + " is jump "
+    printSimpleInstruction(".var " + utostr(jumpVarNum) + " is jump "
       "Llljvm/runtime/Jump; from begin_method to end_method");
 }
 
@@ -299,46 +299,46 @@ void JVMWriter::printCatchJump(unsigned int numJumps) {
  * 
  * @param f  the function
  */
-void JVMWriter::printFunction(const llvm::Function &f) {
+void JVMWriter::printFunction(const Function &f) {
   localVars.clear();
   usedRegisters = 0;
 
   out << '\n';
   out << ".method " << (f.hasLocalLinkage() ? "private " : "public ")
   << "static " << getValueName(&f) << '(';
-  for (llvm::Function::const_arg_iterator i = f.arg_begin(), e = f.arg_end();
+  for (Function::const_arg_iterator i = f.arg_begin(), e = f.arg_end();
        i != e; i++)
     out << getTypeDescriptor(i->getType());
   if (f.isVarArg())
     out << "I";
   out << ')' << getTypeDescriptor(f.getReturnType()) << '\n';
 
-  for (llvm::Function::const_arg_iterator i = f.arg_begin(), e = f.arg_end();
+  for (Function::const_arg_iterator i = f.arg_begin(), e = f.arg_end();
        i != e; i++) {
     // getLocalVarNumber must be called at least once in each iteration
-    unsigned int varNum = getLocalVarNumber(i);
+    unsigned int varNum = getLocalVarNumber(&*i);
     if (debug >= 2)
-      printSimpleInstruction(".var " + llvm::utostr(varNum) + " is "
-                             + getValueName(i) + ' ' + getTypeDescriptor(i->getType())
+      printSimpleInstruction(".var " + utostr(varNum) + " is "
+                             + getValueName(i->getValueName()->getValue()) + ' ' + getTypeDescriptor(i->getType())
                              + " from begin_method to end_method");
   }
   if (f.isVarArg()) {
     vaArgNum = usedRegisters++;
     if (debug >= 2)
-      printSimpleInstruction(".var " + llvm::utostr(vaArgNum)
+      printSimpleInstruction(".var " + utostr(vaArgNum)
                              + " is varargptr I from begin_method to end_method");
   }
 
   // TODO: better stack depth analysis
   unsigned int stackDepth = 8;
   unsigned int numJumps = 0;
-  for (llvm::const_inst_iterator i = llvm::inst_begin(&f), e = llvm::inst_end(&f);
+  for (const_inst_iterator i = inst_begin(&f), e = inst_end(&f);
        i != e; i++) {
     if (stackDepth < i->getNumOperands())
       stackDepth = i->getNumOperands();
-    if (i->getType() != llvm::Type::getVoidTy(f.getContext()))
+    if (i->getType() != Type::getVoidTy(f.getContext()))
       printLocalVariable(f, &*i);
-    if (const llvm::CallInst *inst = llvm::dyn_cast<llvm::CallInst>(&*i)) if (!llvm::isa<llvm::IntrinsicInst>(inst) &&
+    if (const CallInst *inst = dyn_cast<CallInst>(&*i)) if (!isa<IntrinsicInst>(inst) &&
                                                                               getValueName(inst->getOperand(0)) ==
                                                                               "setjmp")
       numJumps++;
@@ -347,7 +347,7 @@ void JVMWriter::printFunction(const llvm::Function &f) {
   for (unsigned int i = 0; i < numJumps; i++) {
     // initialise jump IDs to prevent class verification errors
     printSimpleInstruction("iconst_0");
-    printSimpleInstruction("istore", llvm::utostr(usedRegisters + i));
+    printSimpleInstruction("istore", utostr(usedRegisters + i));
   }
 
   printLabel("begin_method");
@@ -355,8 +355,8 @@ void JVMWriter::printFunction(const llvm::Function &f) {
                          "lljvm/runtime/Memory/createStackFrame()V");
   printFunctionBody(f);
   if (numJumps) printCatchJump(numJumps);
-  printSimpleInstruction(".limit stack", llvm::utostr(stackDepth * 2));
-  printSimpleInstruction(".limit locals", llvm::utostr(usedRegisters));
+  printSimpleInstruction(".limit stack", utostr(stackDepth * 2));
+  printSimpleInstruction(".limit locals", utostr(usedRegisters));
   printLabel("end_method");
   out << ".end method\n";
 }
