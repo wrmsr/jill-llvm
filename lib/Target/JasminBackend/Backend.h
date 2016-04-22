@@ -83,12 +83,6 @@ public:
 
   void printProgram(const std::string& fname, const std::string& modName );
   void printModule(const std::string& fname, const std::string& modName );
-  void printContents(const std::string& fname, const std::string& modName );
-  void printFunction(const std::string& fname, const std::string& funcName );
-  void printFunctions();
-  void printInline(const std::string& fname, const std::string& funcName );
-  void printVariable(const std::string& fname, const std::string& varName );
-  void printType(const std::string& fname, const std::string& typeName );
 
   void error(const std::string& msg);
 
@@ -119,11 +113,9 @@ private:
   void printConstant(const Constant *CPV);
   void printConstants(const Module* M);
 
-  void printVariableUses(const GlobalVariable *GV);
   void printVariableHead(const GlobalVariable *GV);
   void printVariableBody(const GlobalVariable *GV);
 
-  void printFunctionUses(const Function *F);
   void printFunctionHead(const Function *F);
   void printFunctionBody(const Function *F);
   void printInstruction(const Instruction *I, const std::string& bbname);
