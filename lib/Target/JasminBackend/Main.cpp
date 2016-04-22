@@ -22,8 +22,9 @@
 
 #include <iostream>
 
-#include "backend.hpp"
+#include "Backend.h"
 
+using namespace llvm;
 
 static llvm::cl::opt<std::string> input(llvm::cl::Positional, llvm::cl::desc("<input bitcode>"), llvm::cl::init("-"));
 static llvm::cl::opt<std::string> classname("classname", llvm::cl::desc("Binary name of the generated class"));

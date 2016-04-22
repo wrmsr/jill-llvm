@@ -20,18 +20,16 @@
 * THE SOFTWARE.
 */
 
-#include "backend.hpp"
+#include "Backend.h"
+
+using namespace llvm;
 
 char JVMWriter::ID = 0;
-
-namespace llvm {
 
 void initializeJVMWriterPass(PassRegistry &Registry);
 
 INITIALIZE_PASS_BEGIN(JVMWriter, "JVMWriter", "JVMWriter", false, false)
 INITIALIZE_PASS_END(JVMWriter, "JVMWriter", "JVMWriter", false, false)
-
-}
 
 JVMWriter::JVMWriter()
   : FunctionPass(ID), out(llvm::ferrs()) {

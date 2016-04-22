@@ -20,12 +20,14 @@
 * THE SOFTWARE.
 */
 
-#include "backend.hpp"
+#include "Backend.h"
 
 #include <sstream>
 
-#include <llvm/MC/MCAsmInfo.h>
-#include <llvm/IR/Mangler.h>
+#include "llvm/MC/MCAsmInfo.h"
+#include "llvm/IR/Mangler.h"
+
+using namespace llvm;
 
 /**
  * Replace any non-alphanumeric characters with underscores.

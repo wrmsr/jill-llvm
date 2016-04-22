@@ -1,4 +1,6 @@
-#include "backend.hpp"
+#include "Backend.h"
+
+using namespace llvm;
 
 std::string ftostr(const llvm::APFloat &V) {
   std::string Buf;

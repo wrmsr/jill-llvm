@@ -20,7 +20,9 @@
 * THE SOFTWARE.
 */
 
-#include "backend.hpp"
+#include "Backend.h"
+
+using namespace llvm;
 
 /**
  * Load the given value.

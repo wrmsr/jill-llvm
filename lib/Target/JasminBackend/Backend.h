@@ -1,29 +1,30 @@
-#pragma once
+#ifndef LLVM_TARGET_JASMIN_BACKEND_H
+#define LLVM_TARGET_JASMIN_BACKEND_H
 
-#include <llvm/ADT/DenseMap.h>
-#include <llvm/ADT/DenseSet.h>
-#include <llvm/ADT/StringExtras.h>
-#include <llvm/Analysis/ConstantsScanner.h>
-#include <llvm/Analysis/LoopInfo.h>
-#include <llvm/Bitcode/ReaderWriter.h>
-#include <llvm/CodeGen/Passes.h>
-#include <llvm/IR/DataLayout.h>
-#include <llvm/IR/GetElementPtrTypeIterator.h>
-#include <llvm/IR/Instruction.h>
-#include <llvm/IR/Instructions.h>
-#include <llvm/IR/IntrinsicInst.h>
-#include <llvm/IR/Intrinsics.h>
-#include <llvm/IR/LLVMContext.h>
-#include <llvm/IR/Module.h>
-#include <llvm/IR/Module.h>
-#include <llvm/IR/Verifier.h>
-#include <llvm/Pass.h>
-#include <llvm/PassManager.h>
-#include <llvm/Support/CommandLine.h>
-#include <llvm/Support/ErrorHandling.h>
-#include <llvm/Support/FormattedStream.h>
-#include <llvm/Support/MemoryBuffer.h>
-#include <llvm/Transforms/Scalar.h>
+#include "llvm/ADT/DenseMap.h"
+#include "llvm/ADT/DenseSet.h"
+#include "llvm/ADT/StringExtras.h"
+#include "llvm/Analysis/ConstantsScanner.h"
+#include "llvm/Analysis/LoopInfo.h"
+#include "llvm/Bitcode/ReaderWriter.h"
+#include "llvm/CodeGen/Passes.h"
+#include "llvm/IR/DataLayout.h"
+#include "llvm/IR/GetElementPtrTypeIterator.h"
+#include "llvm/IR/Instruction.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/IntrinsicInst.h"
+#include "llvm/IR/Intrinsics.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Verifier.h"
+#include "llvm/Pass.h"
+#include "llvm/PassManager.h"
+#include "llvm/Support/CommandLine.h"
+#include "llvm/Support/ErrorHandling.h"
+#include "llvm/Support/FormattedStream.h"
+#include "llvm/Support/MemoryBuffer.h"
+#include "llvm/Transforms/Scalar.h"
 
 class JVMWriter : public llvm::FunctionPass {
 private:
@@ -180,3 +181,5 @@ public:
 
 std::string ftostr(const llvm::APFloat &V);
 std::string ftostr(double V);
+
+#endif
