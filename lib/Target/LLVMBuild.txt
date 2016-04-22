@@ -26,6 +26,7 @@ subdirectories =
  BPF
  CppBackend
  Hexagon
+ JasminBackend
  MSP430
  NVPTX
  Mips

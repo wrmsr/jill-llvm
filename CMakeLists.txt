@@ -208,6 +208,7 @@ set(LLVM_ALL_TARGETS
   BPF
   CppBackend
   Hexagon
+  JasminBackend
   Mips
   MSP430
   NVPTX
