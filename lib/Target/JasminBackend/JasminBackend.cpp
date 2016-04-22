@@ -12,32 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "JasminTargetMachine.h"
-#include "llvm/ADT/SmallPtrSet.h"
-#include "llvm/ADT/StringExtras.h"
-#include "llvm/ADT/STLExtras.h"
-#include "llvm/Config/config.h"
-#include "llvm/IR/CallingConv.h"
-#include "llvm/IR/Constants.h"
-#include "llvm/IR/DerivedTypes.h"
-#include "llvm/IR/InlineAsm.h"
-#include "llvm/IR/Instruction.h"
-#include "llvm/IR/Instructions.h"
-#include "llvm/IR/LegacyPassManager.h"
-#include "llvm/IR/Module.h"
-#include "llvm/MC/MCAsmInfo.h"
-#include "llvm/MC/MCInstrInfo.h"
-#include "llvm/MC/MCSubtargetInfo.h"
-#include "llvm/Pass.h"
-#include "llvm/Support/CommandLine.h"
-#include "llvm/Support/ErrorHandling.h"
-#include "llvm/Support/FormattedStream.h"
-#include "llvm/Support/TargetRegistry.h"
-#include <algorithm>
-#include <cctype>
-#include <cstdio>
-#include <map>
-#include <set>
+#include "Backend.h"
+
 using namespace llvm;
 
 static cl::opt<std::string>
@@ -81,90 +57,7 @@ extern "C" void LLVMInitializeJasminBackendTarget() {
 }
 
 namespace {
-  typedef std::vector<Type*> TypeList;
-  typedef std::map<Type*,std::string> TypeMap;
-  typedef std::map<const Value*,std::string> ValueMap;
-  typedef std::set<std::string> NameSet;
-  typedef std::set<Type*> TypeSet;
-  typedef std::set<const Value*> ValueSet;
-  typedef std::map<const Value*,std::string> ForwardRefMap;
 
-  /// JasminWriter - This class is the main chunk of code that converts an LLVM
-  /// module to a Jasmin translation unit.
-  class JasminWriter : public ModulePass {
-    std::unique_ptr<formatted_raw_ostream> OutOwner;
-    formatted_raw_ostream &Out;
-    const Module *TheModule;
-    uint64_t uniqueNum;
-    TypeMap TypeNames;
-    ValueMap ValueNames;
-    NameSet UsedNames;
-    TypeSet DefinedTypes;
-    ValueSet DefinedValues;
-    ForwardRefMap ForwardRefs;
-    bool is_inline;
-    unsigned indent_level;
-
-  public:
-    static char ID;
-    explicit JasminWriter(std::unique_ptr<formatted_raw_ostream> o)
-        : ModulePass(ID), OutOwner(std::move(o)), Out(*OutOwner), uniqueNum(0),
-          is_inline(false), indent_level(0) {}
-
-    const char *getPassName() const override { return "Jasmin backend"; }
-
-    bool runOnModule(Module &M) override;
-
-    void printProgram(const std::string& fname, const std::string& modName );
-    void printModule(const std::string& fname, const std::string& modName );
-    void printContents(const std::string& fname, const std::string& modName );
-    void printFunction(const std::string& fname, const std::string& funcName );
-    void printFunctions();
-    void printInline(const std::string& fname, const std::string& funcName );
-    void printVariable(const std::string& fname, const std::string& varName );
-    void printType(const std::string& fname, const std::string& typeName );
-
-    void error(const std::string& msg);
-
-    
-    formatted_raw_ostream& nl(formatted_raw_ostream &Out, int delta = 0);
-    inline void in() { indent_level++; }
-    inline void out() { if (indent_level >0) indent_level--; }
-    
-  private:
-    void printLinkageType(GlobalValue::LinkageTypes LT);
-    void printVisibilityType(GlobalValue::VisibilityTypes VisTypes);
-    void printDLLStorageClassType(GlobalValue::DLLStorageClassTypes DSCType);
-    void printThreadLocalMode(GlobalVariable::ThreadLocalMode TLM);
-    void printCallingConv(CallingConv::ID cc);
-    void printEscapedString(const std::string& str);
-    void printCFP(const ConstantFP* CFP);
-
-    std::string getJasminName(Type* val);
-    inline void printJasminName(Type* val);
-
-    std::string getJasminName(const Value* val);
-    inline void printJasminName(const Value* val);
-
-    void printAttributes(const AttributeSet &PAL, const std::string &name);
-    void printType(Type* Ty);
-    void printTypes(const Module* M);
-
-    void printConstant(const Constant *CPV);
-    void printConstants(const Module* M);
-
-    void printVariableUses(const GlobalVariable *GV);
-    void printVariableHead(const GlobalVariable *GV);
-    void printVariableBody(const GlobalVariable *GV);
-
-    void printFunctionUses(const Function *F);
-    void printFunctionHead(const Function *F);
-    void printFunctionBody(const Function *F);
-    void printInstruction(const Instruction *I, const std::string& bbname);
-    std::string getOpName(const Value*);
-
-    void printModuleBody();
-  };
 } // end anonymous namespace.
 
 formatted_raw_ostream &JasminWriter::nl(formatted_raw_ostream &Out, int delta) {
@@ -200,18 +93,6 @@ static std::string getTypePrefix(Type *Ty) {
 
 void JasminWriter::error(const std::string& msg) {
   report_fatal_error(msg);
-}
-
-static inline std::string ftostr(const APFloat& V) {
-  std::string Buf;
-  if (&V.getSemantics() == &APFloat::IEEEdouble) {
-    raw_string_ostream(Buf) << V.convertToDouble();
-    return Buf;
-  } else if (&V.getSemantics() == &APFloat::IEEEsingle) {
-    raw_string_ostream(Buf) << (double)V.convertToFloat();
-    return Buf;
-  }
-  return "<unknown format in ftostr>"; // error
 }
 
 // printCFP - Print a floating point constant .. very carefully :)
