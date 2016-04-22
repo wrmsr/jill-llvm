@@ -13,7 +13,7 @@
 
 using namespace llvm;
 
-Target TheJasminBackendTarget;
+Target llvm::TheJasminBackendTarget;
 
 static bool JasminBackend_TripleMatchQuality(Triple::ArchType Arch) {
   // This backend doesn't correspond to any architecture. It must be explicitly
