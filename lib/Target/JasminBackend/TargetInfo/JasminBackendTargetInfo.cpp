@@ -21,7 +21,7 @@ static bool JasminBackend_TripleMatchQuality(Triple::ArchType Arch) {
 }
 
 extern "C" void LLVMInitializeJasminBackendTargetInfo() {
-  TargetRegistry::RegisterTarget(TheJasminBackendTarget, "Jasmin",
+  TargetRegistry::RegisterTarget(TheJasminBackendTarget, "jasmin",
                                   "Jasmin backend",
                                   &JasminBackend_TripleMatchQuality);
 }
