@@ -30,7 +30,7 @@ using namespace llvm;
  * @param n  the value of the pointer
  */
 void JasminWriter::printPtrLoad(uint64_t n) {
-  if (TheModule->getDataLayout().getPointerSize() != 32)
+  if (TheModule->getDataLayout().getPointerSize() != 4)
     llvm_unreachable("Only 32-bit pointers are allowed");
   printConstLoad(APInt(32, n, false));
 }
@@ -77,10 +77,10 @@ void JasminWriter::printConstLoad(float f) {
     printSimpleInstruction("fconst_2");
   else if (isnan(f))
     printSimpleInstruction("getstatic", "java/lang/Float/NaN F");
-  else if (isinf(f) > 0)
+  else if (isinf(f) && f > 0)
     printSimpleInstruction("getstatic",
                            "java/lang/Float/POSITIVE_INFINITY F");
-  else if (isinf(f) < 0)
+  else if (isinf(f) && f < 0)
     printSimpleInstruction("getstatic",
                            "java/lang/Float/NEGATIVE_INFINITY F");
   else
@@ -99,10 +99,10 @@ void JasminWriter::printConstLoad(double d) {
     printSimpleInstruction("dconst_1");
   else if (isnan(d))
     printSimpleInstruction("getstatic", "java/lang/Double/NaN D");
-  else if (isinf(d) > 0)
+  else if (isinf(d) && d > 0)
     printSimpleInstruction("getstatic",
                            "java/lang/Double/POSITIVE_INFINITY D");
-  else if (isinf(d) < 0)
+  else if (isinf(d) && d < 0)
     printSimpleInstruction("getstatic",
                            "java/lang/Double/NEGATIVE_INFINITY D");
   else
