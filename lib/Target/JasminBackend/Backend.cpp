@@ -16,9 +16,11 @@
 
 using namespace llvm;
 
-static cl::opt<std::string> FuncName("jasminfname", cl::desc("Specify the name of the generated function"), cl::value_desc("function name"));
+static cl::opt<std::string> FuncName("jasminfname", cl::desc("Specify the name of the generated function"),
+                                     cl::value_desc("function name"));
 
-static cl::opt<std::string> NameToGenerate("jasminfor", cl::Optional, cl::desc("Specify the name of the thing to generate"), cl::init("!bad!"));
+static cl::opt<std::string> NameToGenerate("jasminfor", cl::Optional,
+                                           cl::desc("Specify the name of the thing to generate"), cl::init("!bad!"));
 
 static cl::opt<std::string> input(cl::Positional, cl::desc("<input bitcode>"), cl::init("-"));
 static cl::opt<std::string> className("className", cl::desc("Binary name of the generated class"));
@@ -46,9 +48,21 @@ extern "C" void LLVMInitializeJasminBackendTarget() {
   RegisterTargetMachine<JasminTargetMachine> X(TheJasminBackendTarget);
 }
 
-namespace {
+namespace llvm {
 
-} // end anonymous namespace.
+void initializeJasminWriterPass(PassRegistry&);
+
+}
+
+INITIALIZE_PASS_BEGIN(JasminWriter, "jasmin-writer", "Jasmin Writer", false, false)
+  INITIALIZE_PASS_DEPENDENCY(LoopInfoWrapperPass)
+INITIALIZE_PASS_END(JasminWriter, "jasmin-writer", "Jasmin Writer", false, false)
+
+JasminWriter::JasminWriter(std::unique_ptr<formatted_raw_ostream> o)
+: ModulePass(ID), OutOwner(std::move(o)), Out(*OutOwner), uniqueNum(0),
+  is_inline(false), indent_level(0) {
+  initializeJasminWriterPass(*PassRegistry::getPassRegistry());
+}
 
 formatted_raw_ostream &JasminWriter::nl(formatted_raw_ostream &Out, int delta) {
   Out << '\n';
@@ -1088,8 +1102,11 @@ void JasminWriter::printModule(const std::string &fname, const std::string &mNam
  *            of this pass.
  */
 void JasminWriter::getAnalysisUsage(AnalysisUsage &au) const {
+//  au.addRequired<LoopInfoWrapperPass>();
+//  au.setPreservesAll();
+
   au.addRequired<LoopInfoWrapperPass>();
-  au.setPreservesAll();
+  au.addPreserved<LoopInfoWrapperPass>();
 }
 
 /**

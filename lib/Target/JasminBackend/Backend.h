@@ -73,9 +73,8 @@ class JasminWriter : public ModulePass {
 
 public:
   static char ID;
-  explicit JasminWriter(std::unique_ptr<formatted_raw_ostream> o)
-    : ModulePass(ID), OutOwner(std::move(o)), Out(*OutOwner), uniqueNum(0),
-      is_inline(false), indent_level(0) {}
+  explicit JasminWriter() : ModulePass(ID), Out(*((formatted_raw_ostream*)0)) {}
+  explicit JasminWriter(std::unique_ptr<formatted_raw_ostream> o);
 
   const char *getPassName() const override { return "Jasmin backend"; }
 
@@ -85,7 +84,6 @@ public:
   void printModule(const std::string& fname, const std::string& modName );
 
   void error(const std::string& msg);
-
 
   formatted_raw_ostream& nl(formatted_raw_ostream &Out, int delta = 0);
   inline void in() { indent_level++; }
