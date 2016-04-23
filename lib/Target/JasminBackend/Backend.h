@@ -80,9 +80,6 @@ public:
 
   bool runOnModule(Module &M) override;
 
-  void printProgram(const std::string& fname, const std::string& modName );
-  void printModule(const std::string& fname, const std::string& modName );
-
   void error(const std::string& msg);
 
   formatted_raw_ostream& nl(formatted_raw_ostream &Out, int delta = 0);
@@ -110,8 +107,6 @@ private:
   void printVariableBody(const GlobalVariable *GV);
 
   std::string getOpName(const Value*);
-
-  void printModuleBody();
 
 private:
   std::string sourceName;
