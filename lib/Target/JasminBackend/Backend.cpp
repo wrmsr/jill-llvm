@@ -1031,7 +1031,7 @@ void JasminWriter::printModuleBody() {
   // Finally, we can safely put out all of the function bodies.
   nl(Out) << "// Function Definitions";
   nl(Out);
-  for (const Function &I : *TheModule) {
+  for (Function &I : *TheModule) {
     runOnFunction(I);
   }
 }
@@ -1115,7 +1115,7 @@ void JasminWriter::getAnalysisUsage(AnalysisUsage &au) const {
  * @param f  the function to process
  * @return   whether the function was modified (always false)
  */
-bool JasminWriter::runOnFunction(const Function &f) {
+bool JasminWriter::runOnFunction(Function &f) {
   if (!f.isDeclaration() && !f.hasAvailableExternallyLinkage())
     printFunction(f);
   return false;

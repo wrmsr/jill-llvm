@@ -128,7 +128,7 @@ private:
   unsigned int instNum;
 
 public:
-  bool runOnFunction(const Function &F);
+  bool runOnFunction(Function &F);
   virtual void getAnalysisUsage(AnalysisUsage &usage) const override;
 
   // block.cpp
@@ -147,7 +147,7 @@ public:
                               const Value *trueVal,
                               const Value *falseVal);
   void printSwitchInstruction(const SwitchInst *inst);
-  void printLoop(const Loop *l);
+  void printLoop(const LoopInfo &LI, const Loop *l);
 
   // const.cpp
   void printPtrLoad(uint64_t n);
@@ -168,11 +168,11 @@ public:
   void printIntrinsicCall(const IntrinsicInst *inst);
   void printCallInstruction(const Instruction *inst);
   void printInvokeInstruction(const InvokeInst *inst);
-  void printLocalVariable(const Function &f, const Instruction *inst);
-  void printFunctionBody(const Function &f);
+  void printLocalVariable(Function &f, const Instruction *inst);
+  void printFunctionBody(Function &f);
   unsigned int getLocalVarNumber(const Value *v);
   void printCatchJump(unsigned int numJumps);
-  void printFunction(const Function &f);
+  void printFunction(Function &f);
 
   // instruction.cpp
   void printCmpInstruction(unsigned int predicate,

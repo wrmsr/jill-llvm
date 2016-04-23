@@ -212,7 +212,7 @@ void JasminWriter::printInvokeInstruction(const InvokeInst *inst) {
  * @param f     the parent function of the variable
  * @param inst  the instruction assigned to the variable
  */
-void JasminWriter::printLocalVariable(const Function &f,
+void JasminWriter::printLocalVariable(Function &f,
                                    const Instruction *inst) {
   const Type *ty;
   if (isa<AllocaInst>(inst) && !isa<GlobalVariable>(inst))
@@ -237,11 +237,12 @@ void JasminWriter::printLocalVariable(const Function &f,
  * 
  * @param f  the function
  */
-void JasminWriter::printFunctionBody(const Function &f) {
+void JasminWriter::printFunctionBody(Function &f) {
   for (Function::const_iterator i = f.begin(), e = f.end(); i != e; i++) {
-    if (Loop *l = getAnalysis<LoopInfoWrapperPass>().getLoopInfo().getLoopFor(&*i)) {
+    LoopInfo &LI = getAnalysis<LoopInfoWrapperPass>(f).getLoopInfo();
+    if (Loop *l = LI.getLoopFor(&*i)) {
       if (l->getHeader() == i && l->getParentLoop() == 0)
-        printLoop(l);
+        printLoop(LI, l);
     } else
       printBasicBlock(&*i);
   }
@@ -299,7 +300,7 @@ void JasminWriter::printCatchJump(unsigned int numJumps) {
  * 
  * @param f  the function
  */
-void JasminWriter::printFunction(const Function &f) {
+void JasminWriter::printFunction(Function &f) {
   localVars.clear();
   usedRegisters = 0;
 
@@ -332,7 +333,7 @@ void JasminWriter::printFunction(const Function &f) {
   // TODO: better stack depth analysis
   unsigned int stackDepth = 8;
   unsigned int numJumps = 0;
-  for (const_inst_iterator i = inst_begin(&f), e = inst_end(&f);
+  for (inst_iterator i = inst_begin(&f), e = inst_end(&f);
        i != e; i++) {
     if (stackDepth < i->getNumOperands())
       stackDepth = i->getNumOperands();

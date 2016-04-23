@@ -171,12 +171,12 @@ void JasminWriter::printSwitchInstruction(const SwitchInst *inst) {
  * 
  * @param l  the loop
  */
-void JasminWriter::printLoop(const Loop *l) {
+void JasminWriter::printLoop(const LoopInfo &LI, const Loop *l) {
   printLabel(getLabelName(l->getHeader()));
   for (Loop::block_iterator i = l->block_begin(),
          e = l->block_end(); i != e; i++) {
     const BasicBlock *block = *i;
-    Loop *blockLoop = getAnalysis<LoopInfoWrapperPass>().getLoopInfo().getLoopFor(block);
+    Loop *blockLoop = LI.getLoopFor(block);
     if (l == blockLoop)
       // the loop is the innermost parent of this block
       printBasicBlock(block);
@@ -184,7 +184,7 @@ void JasminWriter::printLoop(const Loop *l) {
              && l == blockLoop->getParentLoop())
       // this block is the header of its innermost parent loop,
       // and the loop is the parent of that loop
-      printLoop(blockLoop);
+      printLoop(LI, blockLoop);
   }
   printSimpleInstruction("goto", getLabelName(l->getHeader()));
 }
