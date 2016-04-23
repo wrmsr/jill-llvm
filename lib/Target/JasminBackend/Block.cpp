@@ -29,7 +29,7 @@ using namespace llvm;
  * 
  * @param block  the basic block
  */
-void JVMWriter::printBasicBlock(const BasicBlock *block) {
+void JasminWriter::printBasicBlock(const BasicBlock *block) {
   printLabel(getLabelName(block));
   for (BasicBlock::const_iterator i = block->begin(), e = block->end();
        i != e; i++) {
@@ -44,7 +44,7 @@ void JVMWriter::printBasicBlock(const BasicBlock *block) {
       std::string::size_type pos = 0;
       while ((pos = str.find("\n", pos)) != std::string::npos)
         str.replace(pos++, 1, "\n;");
-      out << ';' << str << '\n';
+      Out << ';' << str << '\n';
     }
     if (debug >= 1)
       printSimpleInstruction(".line", utostr(instNum));
@@ -66,7 +66,7 @@ void JVMWriter::printBasicBlock(const BasicBlock *block) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printInstruction(const Instruction *inst) {
+void JasminWriter::printInstruction(const Instruction *inst) {
   const Value *left, *right;
   if (inst->getNumOperands() >= 1) left = inst->getOperand(0);
   if (inst->getNumOperands() >= 2) right = inst->getOperand(1);

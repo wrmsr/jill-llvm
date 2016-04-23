@@ -31,12 +31,12 @@ using namespace llvm;
  * @param left   the first operand
  * @param right  the second operand
  */
-void JVMWriter::printBinaryInstruction(const char *name,
+void JasminWriter::printBinaryInstruction(const char *name,
                                        const Value *left,
                                        const Value *right) {
   printValueLoad(left);
   printValueLoad(right);
-  out << '\t' << name << '\n';
+  Out << '\t' << name << '\n';
 }
 
 /**
@@ -46,12 +46,12 @@ void JVMWriter::printBinaryInstruction(const char *name,
  * @param left   the first operand
  * @param right  the second operand
  */
-void JVMWriter::printBinaryInstruction(const std::string &name,
+void JasminWriter::printBinaryInstruction(const std::string &name,
                                        const Value *left,
                                        const Value *right) {
   printValueLoad(left);
   printValueLoad(right);
-  out << '\t' << name << '\n';
+  Out << '\t' << name << '\n';
 }
 
 /**
@@ -59,8 +59,8 @@ void JVMWriter::printBinaryInstruction(const std::string &name,
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printSimpleInstruction(const char *inst) {
-  out << '\t' << inst << '\n';
+void JasminWriter::printSimpleInstruction(const char *inst) {
+  Out << '\t' << inst << '\n';
 }
 
 /**
@@ -69,8 +69,8 @@ void JVMWriter::printSimpleInstruction(const char *inst) {
  * @param inst     the instruction
  * @param operand  the operand to the instruction
  */
-void JVMWriter::printSimpleInstruction(const char *inst, const char *operand) {
-  out << '\t' << inst << ' ' << operand << '\n';
+void JasminWriter::printSimpleInstruction(const char *inst, const char *operand) {
+  Out << '\t' << inst << ' ' << operand << '\n';
 }
 
 /**
@@ -78,8 +78,8 @@ void JVMWriter::printSimpleInstruction(const char *inst, const char *operand) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printSimpleInstruction(const std::string &inst) {
-  out << '\t' << inst << '\n';
+void JasminWriter::printSimpleInstruction(const std::string &inst) {
+  Out << '\t' << inst << '\n';
 }
 
 /**
@@ -88,9 +88,9 @@ void JVMWriter::printSimpleInstruction(const std::string &inst) {
  * @param inst     the instruction
  * @param operand  the operand to the instruction
  */
-void JVMWriter::printSimpleInstruction(const std::string &inst,
+void JasminWriter::printSimpleInstruction(const std::string &inst,
                                        const std::string &operand) {
-  out << '\t' << inst << ' ' << operand << '\n';
+  Out << '\t' << inst << ' ' << operand << '\n';
 }
 
 /**
@@ -98,8 +98,8 @@ void JVMWriter::printSimpleInstruction(const std::string &inst,
  * 
  * @param sig  the signature of the instruction
  */
-void JVMWriter::printVirtualInstruction(const char *sig) {
-  out << '\t' << "invokestatic lljvm/runtime/Instruction/" << sig << '\n';
+void JasminWriter::printVirtualInstruction(const char *sig) {
+  Out << '\t' << "invokestatic lljvm/runtime/Instruction/" << sig << '\n';
 }
 
 /**
@@ -108,7 +108,7 @@ void JVMWriter::printVirtualInstruction(const char *sig) {
  * @param sig      the signature of the instruction
  * @param operand  the operand to the instruction
  */
-void JVMWriter::printVirtualInstruction(const char *sig,
+void JasminWriter::printVirtualInstruction(const char *sig,
                                         const Value *operand) {
   printValueLoad(operand);
   printVirtualInstruction(sig);
@@ -121,7 +121,7 @@ void JVMWriter::printVirtualInstruction(const char *sig,
  * @param left   the first operand
  * @param right  the second operand
  */
-void JVMWriter::printVirtualInstruction(const char *sig,
+void JasminWriter::printVirtualInstruction(const char *sig,
                                         const Value *left,
                                         const Value *right) {
   printValueLoad(left);
@@ -134,7 +134,7 @@ void JVMWriter::printVirtualInstruction(const char *sig,
  * 
  * @param sig  the signature of the instruction
  */
-void JVMWriter::printVirtualInstruction(const std::string &sig) {
+void JasminWriter::printVirtualInstruction(const std::string &sig) {
   printVirtualInstruction(sig.c_str());
 }
 
@@ -144,7 +144,7 @@ void JVMWriter::printVirtualInstruction(const std::string &sig) {
  * @param sig      the signature of the instruction
  * @param operand  the operand to the instruction
  */
-void JVMWriter::printVirtualInstruction(const std::string &sig,
+void JasminWriter::printVirtualInstruction(const std::string &sig,
                                         const Value *operand) {
   printValueLoad(operand);
   printVirtualInstruction(sig);
@@ -157,7 +157,7 @@ void JVMWriter::printVirtualInstruction(const std::string &sig,
  * @param left   the first operand
  * @param right  the second operand
  */
-void JVMWriter::printVirtualInstruction(const std::string &sig,
+void JasminWriter::printVirtualInstruction(const std::string &sig,
                                         const Value *left,
                                         const Value *right) {
   printValueLoad(left);
@@ -170,8 +170,8 @@ void JVMWriter::printVirtualInstruction(const std::string &sig,
  * 
  * @param label  the label
  */
-void JVMWriter::printLabel(const char *label) {
-  out << label << ":\n";
+void JasminWriter::printLabel(const char *label) {
+  Out << label << ":\n";
 }
 
 /**
@@ -179,6 +179,6 @@ void JVMWriter::printLabel(const char *label) {
  * 
  * @param label  the label
  */
-void JVMWriter::printLabel(const std::string &label) {
-  out << label << ":\n";
+void JasminWriter::printLabel(const std::string &label) {
+  Out << label << ":\n";
 }

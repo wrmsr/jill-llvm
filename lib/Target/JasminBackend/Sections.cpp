@@ -27,58 +27,58 @@ using namespace llvm;
 /**
  * Print the header.
  */
-void JVMWriter::printHeader() {
+void JasminWriter::printHeader() {
   if (debug >= 1)
-    out << ".source " << sourcename << "\n";
-  out << ".class public final " << classname << "\n"
+    Out << ".source " << sourceName << "\n";
+  Out << ".class public final " << className << "\n"
     ".super java/lang/Object\n\n";
 }
 
 /**
  * Print the field declarations.
  */
-void JVMWriter::printFields() {
-  out << "; Fields\n";
-  for (Module::global_iterator i = module->global_begin(), e = module->global_end(); i != e; i++) {
+void JasminWriter::printFields() {
+  Out << "; Fields\n";
+  for (Module::const_global_iterator i = TheModule->global_begin(), e = TheModule->global_end(); i != e; i++) {
     if (i->isDeclaration()) {
-      out << ".extern field ";
+      Out << ".extern field ";
       externRefs.insert(&*i);
     } else
-      out << ".field " << (i->hasLocalLinkage() ? "private " : "public ") << "static final ";
-    out << getValueName(&*i) << ' ' << getTypeDescriptor(i->getType());
+      Out << ".field " << (i->hasLocalLinkage() ? "private " : "public ") << "static final ";
+    Out << getValueName(&*i) << ' ' << getTypeDescriptor(i->getType());
     if (debug >= 3)
-      out << " ; " << *i;
+      Out << " ; " << *i;
     else
-      out << '\n';
+      Out << '\n';
   }
-  out << '\n';
+  Out << '\n';
 }
 
 /**
  * Print the list of external methods.
  */
-void JVMWriter::printExternalMethods() {
-  out << "; External methods\n";
-  for (Module::const_iterator i = module->begin(), e = module->end(); i != e; i++) {
+void JasminWriter::printExternalMethods() {
+  Out << "; External methods\n";
+  for (Module::const_iterator i = TheModule->begin(), e = TheModule->end(); i != e; i++) {
     if (i->isDeclaration() && !i->isIntrinsic()) {
       const Function *f = &*i;
       const FunctionType *ty = f->getFunctionType();
-      out << ".extern method " << getValueName(f) << getCallSignature(ty);
+      Out << ".extern method " << getValueName(f) << getCallSignature(ty);
       // FIXME:
       // if(debug >= 3)
-      // out << " ; " << *ty;
-      out << '\n';
+      // Out << " ; " << *ty;
+      Out << '\n';
       externRefs.insert(f);
     }
   }
-  out << '\n';
+  Out << '\n';
 }
 
 /**
  * Print the class constructor.
  */
-void JVMWriter::printConstructor() {
-  out << "; Constructor\n"
+void JasminWriter::printConstructor() {
+  Out << "; Constructor\n"
     ".method private <init>()V\n"
     "\taload_0\n"
     "\tinvokespecial java/lang/Object/<init>()V\n"
@@ -89,12 +89,12 @@ void JVMWriter::printConstructor() {
 /**
  * Print the static class initialization method.
  */
-void JVMWriter::printClInit() {
-  out << ".method public <clinit>()V\n";
+void JasminWriter::printClInit() {
+  Out << ".method public <clinit>()V\n";
   printSimpleInstruction(".limit stack 4");
 
-  out << "\n\t; allocate global variables\n";
-  for (Module::global_iterator i = module->global_begin(), e = module->global_end(); i != e; i++) {
+  Out << "\n\t; allocate global variables\n";
+  for (Module::global_iterator i = TheModule->global_begin(), e = TheModule->global_end(); i != e; i++) {
     if (!i->isDeclaration()) {
       const GlobalVariable *g = &*i;
       const Constant *c = g->getInitializer();
@@ -103,40 +103,40 @@ void JVMWriter::printClInit() {
       printSimpleInstruction("invokestatic",
                              "lljvm/runtime/Memory/allocateData(I)I");
       printSimpleInstruction("putstatic",
-                             classname + "/" + getValueName(g) + " I");
+                             className + "/" + getValueName(g) + " I");
     }
   }
 
-  out << "\n\t; initialise global variables\n";
-  for (Module::global_iterator i = module->global_begin(), e = module->global_end(); i != e; i++) {
+  Out << "\n\t; initialise global variables\n";
+  for (Module::global_iterator i = TheModule->global_begin(), e = TheModule->global_end(); i != e; i++) {
     if (!i->isDeclaration()) {
       const GlobalVariable *g = &*i;
       const Constant *c = g->getInitializer();
       printSimpleInstruction("getstatic",
-                             classname + "/" + getValueName(g) + " I");
+                             className + "/" + getValueName(g) + " I");
       printStaticConstant(c);
       printSimpleInstruction("pop");
-      out << '\n';
+      Out << '\n';
     }
   }
 
   printSimpleInstruction("return");
-  out << ".end method\n\n";
+  Out << ".end method\n\n";
 }
 
 /**
  * Print the main method.
  */
-void JVMWriter::printMainMethod() {
-  const Function *f = module->getFunction("main");
+void JasminWriter::printMainMethod() {
+  const Function *f = TheModule->getFunction("main");
   if (!f || f->isDeclaration())
     return;
 
-  out << ".method public static main([Ljava/lang/String;)V\n";
+  Out << ".method public static main([Ljava/lang/String;)V\n";
   printSimpleInstruction(".limit stack 4");
 
   if (f->arg_size() == 0) {
-    printSimpleInstruction("invokestatic", classname + "/main()I");
+    printSimpleInstruction("invokestatic", className + "/main()I");
   } else if (f->arg_size() == 2) {
     Function::const_arg_iterator arg1, arg2;
     arg1 = arg2 = f->arg_begin();
@@ -149,7 +149,7 @@ void JVMWriter::printMainMethod() {
     printSimpleInstruction("aload_0");
     printSimpleInstruction("invokestatic",
                            "lljvm/runtime/Memory/storeStack([Ljava/lang/String;)I");
-    printSimpleInstruction("invokestatic", classname + "/main("
+    printSimpleInstruction("invokestatic", className + "/main("
                                            + getTypeDescriptor(arg1->getType())
                                            + getTypeDescriptor(arg2->getType()) + ")I");
   } else {
@@ -158,5 +158,5 @@ void JVMWriter::printMainMethod() {
 
   printSimpleInstruction("invokestatic", "lljvm/lib/c/exit(I)V");
   printSimpleInstruction("return");
-  out << ".end method\n";
+  Out << ".end method\n";
 }

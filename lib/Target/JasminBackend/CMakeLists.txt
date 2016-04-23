@@ -1,5 +1,4 @@
 add_llvm_target(JasminBackendCodeGen
-  JasminBackend.cpp
   Backend.cpp
   Block.cpp
   Branch.cpp
@@ -7,7 +6,6 @@ add_llvm_target(JasminBackendCodeGen
   Function.cpp
   Instruction.cpp
   LoadStore.cpp
-  Main.cpp
   Name.cpp
   PrintInst.cpp
   Sections.cpp

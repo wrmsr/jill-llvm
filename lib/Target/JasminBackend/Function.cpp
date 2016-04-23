@@ -41,7 +41,7 @@ static uint64_t getUID() {
  * @param ty  the function type
  * @return    the call signature
  */
-std::string JVMWriter::getCallSignature(const FunctionType *ty) {
+std::string JasminWriter::getCallSignature(const FunctionType *ty) {
   if (ty->isVarArg() && ty->getNumParams() == 0)
     // non-prototyped function
     return "";
@@ -63,7 +63,7 @@ std::string JVMWriter::getCallSignature(const FunctionType *ty) {
  * @param minOperand  the lower bound on the operands to pack (inclusive)
  * @param maxOperand  the upper bound on the operands to pack (exclusive)
  */
-void JVMWriter::printOperandPack(const Instruction *inst,
+void JasminWriter::printOperandPack(const Instruction *inst,
                                  unsigned int minOperand,
                                  unsigned int maxOperand) {
   unsigned int size = 0;
@@ -92,7 +92,7 @@ void JVMWriter::printOperandPack(const Instruction *inst,
  * @param functionVal  the function to call
  * @param inst         the instruction
  */
-void JVMWriter::printFunctionCall(const Value *functionVal,
+void JasminWriter::printFunctionCall(const Value *functionVal,
                                   const Instruction *inst) {
   unsigned int origin = isa<InvokeInst>(inst) ? 3 : 1;
   if (const Function *f = dyn_cast<Function>(functionVal)) { // direct call
@@ -112,7 +112,7 @@ void JVMWriter::printFunctionCall(const Value *functionVal,
                              getValueName(f) + getCallSignature(ty));
     else
       printSimpleInstruction("invokestatic",
-                             classname + "/" + getValueName(f) + getCallSignature(ty));
+                             className + "/" + getValueName(f) + getCallSignature(ty));
 
     if (getValueName(f) == "setjmp") {
       unsigned int varNum = usedRegisters++;
@@ -137,7 +137,7 @@ void JVMWriter::printFunctionCall(const Value *functionVal,
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printIntrinsicCall(const IntrinsicInst *inst) {
+void JasminWriter::printIntrinsicCall(const IntrinsicInst *inst) {
   switch (inst->getIntrinsicID()) {
     case Intrinsic::vastart:
     case Intrinsic::vacopy:
@@ -176,7 +176,7 @@ void JVMWriter::printIntrinsicCall(const IntrinsicInst *inst) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printCallInstruction(const Instruction *inst) {
+void JasminWriter::printCallInstruction(const Instruction *inst) {
   if (isa<IntrinsicInst>(inst))
     printIntrinsicCall(cast<IntrinsicInst>(inst));
   else
@@ -188,7 +188,7 @@ void JVMWriter::printCallInstruction(const Instruction *inst) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printInvokeInstruction(const InvokeInst *inst) {
+void JasminWriter::printInvokeInstruction(const InvokeInst *inst) {
   std::string labelname = utostr(getUID()) + "$invoke";
   printLabel(labelname + "_begin");
   printFunctionCall(inst->getOperand(0), inst);
@@ -212,7 +212,7 @@ void JVMWriter::printInvokeInstruction(const InvokeInst *inst) {
  * @param f     the parent function of the variable
  * @param inst  the instruction assigned to the variable
  */
-void JVMWriter::printLocalVariable(const Function &f,
+void JasminWriter::printLocalVariable(const Function &f,
                                    const Instruction *inst) {
   const Type *ty;
   if (isa<AllocaInst>(inst) && !isa<GlobalVariable>(inst))
@@ -237,7 +237,7 @@ void JVMWriter::printLocalVariable(const Function &f,
  * 
  * @param f  the function
  */
-void JVMWriter::printFunctionBody(const Function &f) {
+void JasminWriter::printFunctionBody(const Function &f) {
   for (Function::const_iterator i = f.begin(), e = f.end(); i != e; i++) {
     if (Loop *l = getAnalysis<LoopInfoWrapperPass>().getLoopInfo().getLoopFor(&*i)) {
       if (l->getHeader() == i && l->getParentLoop() == 0)
@@ -254,7 +254,7 @@ void JVMWriter::printFunctionBody(const Function &f) {
  * @param v  the value
  * @return   the local variable number
  */
-unsigned int JVMWriter::getLocalVarNumber(const Value *v) {
+unsigned int JasminWriter::getLocalVarNumber(const Value *v) {
   if (!localVars.count(v)) {
     localVars[v] = usedRegisters++;
     if (getBitWidth(v->getType()) == 64)
@@ -268,7 +268,7 @@ unsigned int JVMWriter::getLocalVarNumber(const Value *v) {
  * 
  * @param numJumps  the number of setjmp calls made by the current function
  */
-void JVMWriter::printCatchJump(unsigned int numJumps) {
+void JasminWriter::printCatchJump(unsigned int numJumps) {
   unsigned int jumpVarNum = usedRegisters++;
   printSimpleInstruction(".catch lljvm/runtime/Jump "
                            "from begin_method to catch_jump using catch_jump");
@@ -299,19 +299,19 @@ void JVMWriter::printCatchJump(unsigned int numJumps) {
  * 
  * @param f  the function
  */
-void JVMWriter::printFunction(const Function &f) {
+void JasminWriter::printFunction(const Function &f) {
   localVars.clear();
   usedRegisters = 0;
 
-  out << '\n';
-  out << ".method " << (f.hasLocalLinkage() ? "private " : "public ")
+  Out << '\n';
+  Out << ".method " << (f.hasLocalLinkage() ? "private " : "public ")
   << "static " << getValueName(&f) << '(';
   for (Function::const_arg_iterator i = f.arg_begin(), e = f.arg_end();
        i != e; i++)
-    out << getTypeDescriptor(i->getType());
+    Out << getTypeDescriptor(i->getType());
   if (f.isVarArg())
-    out << "I";
-  out << ')' << getTypeDescriptor(f.getReturnType()) << '\n';
+    Out << "I";
+  Out << ')' << getTypeDescriptor(f.getReturnType()) << '\n';
 
   for (Function::const_arg_iterator i = f.arg_begin(), e = f.arg_end();
        i != e; i++) {
@@ -358,5 +358,5 @@ void JVMWriter::printFunction(const Function &f) {
   printSimpleInstruction(".limit stack", utostr(stackDepth * 2));
   printSimpleInstruction(".limit locals", utostr(usedRegisters));
   printLabel("end_method");
-  out << ".end method\n";
+  Out << ".end method\n";
 }

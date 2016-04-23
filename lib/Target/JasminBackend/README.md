@@ -82,10 +82,10 @@ should not be used as `libc` is linked by default. If this is not desired, then
 the `-nostdlib` flag can be used.
 
 By default all classes generated are placed in the default package. To assign
-the class to a specific package, the `-classname` flag can be used. For example,
+the class to a specific package, the `-className` flag can be used. For example,
 the following command:
 
-    lljvm-cc ... -classname=com.example.foo -o bar/baz
+    lljvm-cc ... -className=com.example.foo -o bar/baz
 will create a class named foo, in the package com.example, placing it in the
 directory `bar/com/example/`. The shell script will be output to `bar/baz`.
 
@@ -122,7 +122,7 @@ It can be invoked by:
 
     lljvm-backend foo.bc > foo.j
 
-There are two flags that are accepted by the backend: `-classname` and `-g`.
+There are two flags that are accepted by the backend: `-className` and `-g`.
 Run `lljvm-backend --help` for more information.
 
 The output file should then be linked by the LLJVM Linker (see below), and

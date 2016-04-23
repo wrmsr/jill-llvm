@@ -41,7 +41,7 @@ static unsigned int alignOffset(unsigned int offset, unsigned int align) {
  * @param left       the first operand of the instruction
  * @param right      the second operand of the instruction
  */
-void JVMWriter::printCmpInstruction(unsigned int predicate,
+void JasminWriter::printCmpInstruction(unsigned int predicate,
                                     const Value *left,
                                     const Value *right) {
   std::string inst;
@@ -136,7 +136,7 @@ void JVMWriter::printCmpInstruction(unsigned int predicate,
  * @param left   the first operand of the instruction
  * @param right  the second operand of the instruction
  */
-void JVMWriter::printArithmeticInstruction(unsigned int op,
+void JasminWriter::printArithmeticInstruction(unsigned int op,
                                            const Value *left,
                                            const Value *right) {
   printValueLoad(left);
@@ -202,7 +202,7 @@ void JVMWriter::printArithmeticInstruction(unsigned int op,
  * @param ty     the destination type
  * @param srcTy  the source type
  */
-void JVMWriter::printBitCastInstruction(const Type *ty, const Type *srcTy) {
+void JasminWriter::printBitCastInstruction(const Type *ty, const Type *srcTy) {
   char typeID = getTypeID(ty);
   char srcTypeID = getTypeID(srcTy);
   if (srcTypeID == 'J' && typeID == 'D')
@@ -225,7 +225,7 @@ void JVMWriter::printBitCastInstruction(const Type *ty, const Type *srcTy) {
  * @param typePrefix     the type prefix of the destination type
  * @param srcTypePrefix  the type prefix of the source type
  */
-void JVMWriter::printCastInstruction(const std::string &typePrefix,
+void JasminWriter::printCastInstruction(const std::string &typePrefix,
                                      const std::string &srcTypePrefix) {
   if (srcTypePrefix != typePrefix)
     printSimpleInstruction(srcTypePrefix + "2" + typePrefix);
@@ -239,7 +239,7 @@ void JVMWriter::printCastInstruction(const std::string &typePrefix,
  * @param ty    the destination type
  * @param srcTy the source type
  */
-void JVMWriter::printCastInstruction(unsigned int op, const Value *v,
+void JasminWriter::printCastInstruction(unsigned int op, const Value *v,
                                      const Type *ty, const Type *srcTy) {
   printValueLoad(v);
   switch (op) {
@@ -297,7 +297,7 @@ void JVMWriter::printCastInstruction(unsigned int op, const Value *v,
  * @param e  an iterator specifying the upper bound on the types indexed by the
  *           instruction
  */
-void JVMWriter::printGepInstruction(const Value *v,
+void JasminWriter::printGepInstruction(const Value *v,
                                     gep_type_iterator i,
                                     gep_type_iterator e) {
   // load address
@@ -352,7 +352,7 @@ void JVMWriter::printGepInstruction(const Value *v,
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printAllocaInstruction(const AllocaInst *inst) {
+void JasminWriter::printAllocaInstruction(const AllocaInst *inst) {
   uint64_t size = dataLayout->getTypeAllocSize(inst->getAllocatedType());
   if (const ConstantInt *c = dyn_cast<ConstantInt>(inst->getOperand(0))) {
     // constant optimization
@@ -372,7 +372,7 @@ void JVMWriter::printAllocaInstruction(const AllocaInst *inst) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printVAArgInstruction(const VAArgInst *inst) {
+void JasminWriter::printVAArgInstruction(const VAArgInst *inst) {
   printIndirectLoad(inst->getOperand(0));
   printSimpleInstruction("dup");
   printConstLoad(
@@ -390,7 +390,7 @@ void JVMWriter::printVAArgInstruction(const VAArgInst *inst) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printVAIntrinsic(const IntrinsicInst *inst) {
+void JasminWriter::printVAIntrinsic(const IntrinsicInst *inst) {
   const Type *valistTy = PointerType::getUnqual(
     IntegerType::get(inst->getContext(), 8));
   switch (inst->getIntrinsicID()) {
@@ -415,7 +415,7 @@ void JVMWriter::printVAIntrinsic(const IntrinsicInst *inst) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printMemIntrinsic(const MemIntrinsic *inst) {
+void JasminWriter::printMemIntrinsic(const MemIntrinsic *inst) {
   printValueLoad(inst->getDest());
   if (const MemTransferInst *minst = dyn_cast<MemTransferInst>(inst))
     printValueLoad(minst->getSource());
@@ -447,7 +447,7 @@ void JVMWriter::printMemIntrinsic(const MemIntrinsic *inst) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printMathIntrinsic(const IntrinsicInst *inst) {
+void JasminWriter::printMathIntrinsic(const IntrinsicInst *inst) {
   bool f32 = (getBitWidth(inst->getOperand(1)->getType()) == 32);
   printValueLoad(inst->getOperand(1));
   if (f32) printSimpleInstruction("f2d");
@@ -480,7 +480,7 @@ void JVMWriter::printMathIntrinsic(const IntrinsicInst *inst) {
  * 
  * @param inst  the instruction
  */
-void JVMWriter::printBitIntrinsic(const IntrinsicInst *inst) {
+void JasminWriter::printBitIntrinsic(const IntrinsicInst *inst) {
   // TODO: ctpop, ctlz, cttz
   const Value *value = inst->getOperand(1);
   const std::string typeDescriptor = getTypeDescriptor(value->getType());

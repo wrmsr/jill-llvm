@@ -60,7 +60,7 @@ class JasminWriter : public ModulePass {
 
   std::unique_ptr<formatted_raw_ostream> OutOwner;
   formatted_raw_ostream &Out;
-  const Module *TheModule;
+  Module *TheModule;
   uint64_t uniqueNum;
   TypeMap TypeNames;
   ValueMap ValueNames;
@@ -92,10 +92,6 @@ public:
   inline void out() { if (indent_level >0) indent_level--; }
 
 private:
-  void printLinkageType(GlobalValue::LinkageTypes LT);
-  void printVisibilityType(GlobalValue::VisibilityTypes VisTypes);
-  void printDLLStorageClassType(GlobalValue::DLLStorageClassTypes DSCType);
-  void printThreadLocalMode(GlobalVariable::ThreadLocalMode TLM);
   void printCallingConv(CallingConv::ID cc);
   void printEscapedString(const std::string& str);
   void printCFP(const ConstantFP* CFP);
@@ -113,24 +109,16 @@ private:
   void printConstant(const Constant *CPV);
   void printConstants(const Module* M);
 
-  void printVariableHead(const GlobalVariable *GV);
   void printVariableBody(const GlobalVariable *GV);
 
-  void printFunctionHead(const Function *F);
-  void printFunctionBody(const Function *F);
-  void printInstruction(const Instruction *I, const std::string& bbname);
   std::string getOpName(const Value*);
 
   void printModuleBody();
-};
 
-class JVMWriter : public FunctionPass {
 private:
-  formatted_raw_ostream &out;
-  std::string sourcename;
-  std::string classname;
+  std::string sourceName;
+  std::string className;
   unsigned int debug;
-  Module *module;
   const DataLayout *dataLayout;
   static char id;
 
@@ -142,20 +130,8 @@ private:
   unsigned int instNum;
 
 public:
-  static char ID;
-
-  JVMWriter();
-  JVMWriter(const DataLayout *dl, formatted_raw_ostream &o,
-            const std::string &cls, unsigned int dbg);
-
-  virtual const char *getPassName() const override {
-    return "JVMWriter";
-  }
-
-  virtual bool doInitialization(Module &module) override;
-  virtual bool runOnFunction(Function &F) override;
+  bool runOnFunction(const Function &F);
   virtual void getAnalysisUsage(AnalysisUsage &usage) const override;
-  virtual bool doFinalization(Module &module) override;
 
   // block.cpp
   void printBasicBlock(const BasicBlock *block);

@@ -40,7 +40,7 @@ static uint64_t getUID() {
  * @param src   the predecessor block
  * @param dest  the destination block
  */
-void JVMWriter::printPHICopy(const BasicBlock *src, const BasicBlock *dest) {
+void JasminWriter::printPHICopy(const BasicBlock *src, const BasicBlock *dest) {
   for (BasicBlock::const_iterator i = dest->begin(); isa<PHINode>(i); i++) {
     const PHINode *phi = cast<PHINode>(i);
     const Value *val = phi->getIncomingValueForBlock(src);
@@ -57,7 +57,7 @@ void JVMWriter::printPHICopy(const BasicBlock *src, const BasicBlock *dest) {
  * @param curBlock   the current block
  * @param destBlock  the destination block
  */
-void JVMWriter::printBranchInstruction(const BasicBlock *curBlock,
+void JasminWriter::printBranchInstruction(const BasicBlock *curBlock,
                                        const BasicBlock *destBlock) {
   printPHICopy(curBlock, destBlock);
   printSimpleInstruction("goto", getLabelName(destBlock));
@@ -72,7 +72,7 @@ void JVMWriter::printBranchInstruction(const BasicBlock *curBlock,
  * @param falseBlock  the destination block if the value on top of the stack is
  *                    zero
  */
-void JVMWriter::printBranchInstruction(const BasicBlock *curBlock,
+void JasminWriter::printBranchInstruction(const BasicBlock *curBlock,
                                        const BasicBlock *trueBlock,
                                        const BasicBlock *falseBlock) {
   if (trueBlock == falseBlock) {
@@ -104,7 +104,7 @@ void JVMWriter::printBranchInstruction(const BasicBlock *curBlock,
  * 
  * @param inst  the branch instrtuction
  */
-void JVMWriter::printBranchInstruction(const BranchInst *inst) {
+void JasminWriter::printBranchInstruction(const BranchInst *inst) {
   if (inst->isUnconditional()) {
     printBranchInstruction(inst->getParent(), inst->getSuccessor(0));
   } else {
@@ -123,7 +123,7 @@ void JVMWriter::printBranchInstruction(const BranchInst *inst) {
  * @param falseVal  the return value of the instruction if the condition is
  *                  zero
  */
-void JVMWriter::printSelectInstruction(const Value *cond,
+void JasminWriter::printSelectInstruction(const Value *cond,
                                        const Value *trueVal,
                                        const Value *falseVal) {
   std::string labelname = "select" + utostr(getUID());
@@ -141,7 +141,7 @@ void JVMWriter::printSelectInstruction(const Value *cond,
  * 
  * @param inst  the switch instruction
  */
-void JVMWriter::printSwitchInstruction(const SwitchInst *inst) {
+void JasminWriter::printSwitchInstruction(const SwitchInst *inst) {
   // TODO: This method does not handle switch statements when the
   // successor contains phi instructions (the value of the phi instruction
   // should be set before branching to the successor). Therefore, it has
@@ -158,12 +158,12 @@ void JVMWriter::printSwitchInstruction(const SwitchInst *inst) {
   // TODO: tableswitch in cases where it won't increase the size of the
   //       class file
   printValueLoad(inst->getCondition());
-  out<< "\tlookupswitch\n";
+  Out << "\tlookupswitch\n";
   for (std::map<int, unsigned int>::const_iterator
          i = cases.begin(), e = cases.end(); i != e; i++)
-    out << "\t\t" << i->first << " : "
+    Out << "\t\t" << i->first << " : "
     << getLabelName(inst->getSuccessor(i->second)) << '\n';
-  out << "\t\tdefault : " << getLabelName(inst->getDefaultDest()) << '\n';
+  Out << "\t\tdefault : " << getLabelName(inst->getDefaultDest()) << '\n';
 }
 
 /**
@@ -171,7 +171,7 @@ void JVMWriter::printSwitchInstruction(const SwitchInst *inst) {
  * 
  * @param l  the loop
  */
-void JVMWriter::printLoop(const Loop *l) {
+void JasminWriter::printLoop(const Loop *l) {
   printLabel(getLabelName(l->getHeader()));
   for (Loop::block_iterator i = l->block_begin(),
          e = l->block_end(); i != e; i++) {

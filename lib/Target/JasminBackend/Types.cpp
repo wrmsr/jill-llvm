@@ -31,7 +31,7 @@ using namespace llvm;
  * @param expand  specifies whether to expand the type to 32 bits
  * @return        the bit width
  */
-unsigned int JVMWriter::getBitWidth(const Type *ty, bool expand) {
+unsigned int JasminWriter::getBitWidth(const Type *ty, bool expand) {
   if (ty->getTypeID() == Type::ArrayTyID
       || ty->getTypeID() == Type::VectorTyID
       || ty->getTypeID() == Type::StructTyID
@@ -60,7 +60,7 @@ unsigned int JVMWriter::getBitWidth(const Type *ty, bool expand) {
  * @param expand  specifies whether to expand the type to 32 bits
  * @return        the type ID
  */
-char JVMWriter::getTypeID(const Type *ty, bool expand) {
+char JasminWriter::getTypeID(const Type *ty, bool expand) {
   switch (ty->getTypeID()) {
     case Type::VoidTyID:
       return 'V';
@@ -100,7 +100,7 @@ char JVMWriter::getTypeID(const Type *ty, bool expand) {
  * @param expand  specifies whether to expand the type to 32 bits
  * @return        the type name
  */
-std::string JVMWriter::getTypeName(const Type *ty, bool expand) {
+std::string JasminWriter::getTypeName(const Type *ty, bool expand) {
   switch (getTypeID(ty, expand)) {
     case 'V':
       return "void";
@@ -131,7 +131,7 @@ std::string JVMWriter::getTypeName(const Type *ty, bool expand) {
  * @param expand  specifies whether to expand the type to 32 bits
  * @return        the type descriptor
  */
-std::string JVMWriter::getTypeDescriptor(const Type *ty, bool expand) {
+std::string JasminWriter::getTypeDescriptor(const Type *ty, bool expand) {
   return std::string() + getTypeID(ty, expand);
 }
 
@@ -142,7 +142,7 @@ std::string JVMWriter::getTypeDescriptor(const Type *ty, bool expand) {
  * @param expand  specifies whether to expand the type to 32 bits
  * @return        the type postfix
  */
-std::string JVMWriter::getTypePostfix(const Type *ty, bool expand) {
+std::string JasminWriter::getTypePostfix(const Type *ty, bool expand) {
   switch (ty->getTypeID()) {
     case Type::VoidTyID:
       return "void";
@@ -170,7 +170,7 @@ std::string JVMWriter::getTypePostfix(const Type *ty, bool expand) {
  * @param expand  specifies whether to expand the type to 32 bits
  * @return        the type prefix
  */
-std::string JVMWriter::getTypePrefix(const Type *ty, bool expand) {
+std::string JasminWriter::getTypePrefix(const Type *ty, bool expand) {
   switch (getTypeID(ty, expand)) {
     case 'Z':
     case 'B':

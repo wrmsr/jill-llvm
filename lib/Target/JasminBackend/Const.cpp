@@ -29,8 +29,8 @@ using namespace llvm;
  * 
  * @param n  the value of the pointer
  */
-void JVMWriter::printPtrLoad(uint64_t n) {
-  if (module->getDataLayout().getPointerSize() != 32)
+void JasminWriter::printPtrLoad(uint64_t n) {
+  if (TheModule->getDataLayout().getPointerSize() != 32)
     llvm_unreachable("Only 32-bit pointers are allowed");
   printConstLoad(APInt(32, n, false));
 }
@@ -40,7 +40,7 @@ void JVMWriter::printPtrLoad(uint64_t n) {
  * 
  * @param i  the integer
  */
-void JVMWriter::printConstLoad(const APInt &i) {
+void JasminWriter::printConstLoad(const APInt &i) {
   if (i.getBitWidth() <= 32) {
     int64_t value = i.getSExtValue();
     if (value == -1)
@@ -68,7 +68,7 @@ void JVMWriter::printConstLoad(const APInt &i) {
  * 
  * @param f  the value
  */
-void JVMWriter::printConstLoad(float f) {
+void JasminWriter::printConstLoad(float f) {
   if (f == 0.0)
     printSimpleInstruction("fconst_0");
   else if (f == 1.0)
@@ -92,7 +92,7 @@ void JVMWriter::printConstLoad(float f) {
  * 
  * @param d  the value
  */
-void JVMWriter::printConstLoad(double d) {
+void JasminWriter::printConstLoad(double d) {
   if (d == 0.0)
     printSimpleInstruction("dconst_0");
   else if (d == 1.0)
@@ -114,7 +114,7 @@ void JVMWriter::printConstLoad(double d) {
  * 
  * @param c  the constant
  */
-void JVMWriter::printConstLoad(const Constant *c) {
+void JasminWriter::printConstLoad(const Constant *c) {
   if (const ConstantInt *i = dyn_cast<ConstantInt>(c)) {
     printConstLoad(i->getValue());
   } else if (const ConstantFP *fp = dyn_cast<ConstantFP>(c)) {
@@ -137,47 +137,47 @@ void JVMWriter::printConstLoad(const Constant *c) {
  * @param cstring  true iff the string contains a single null character at the
  *                 end
  */
-void JVMWriter::printConstLoad(const std::string &str, bool cstring) {
-  out << "\tldc \"";
+void JasminWriter::printConstLoad(const std::string &str, bool cstring) {
+  Out << "\tldc \"";
   if (cstring)
     for (std::string::const_iterator i = str.begin(),
            e = str.end() - 1; i != e; i++)
       switch (*i) {
         case '\\':
-          out << "\\\\";
+          Out << "\\\\";
           break;
         case '\b':
-          out << "\\b";
+          Out << "\\b";
           break;
         case '\t':
-          out << "\\t";
+          Out << "\\t";
           break;
         case '\n':
-          out << "\\n";
+          Out << "\\n";
           break;
         case '\f':
-          out << "\\f";
+          Out << "\\f";
           break;
         case '\r':
-          out << "\\r";
+          Out << "\\r";
           break;
         case '\"':
-          out << "\\\"";
+          Out << "\\\"";
           break;
         case '\'':
-          out << "\\\'";
+          Out << "\\\'";
           break;
         default:
-          out << *i;
+          Out << *i;
           break;
       }
   else
     for (std::string::const_iterator i = str.begin(),
            e = str.end(); i != e; i++) {
       const char c = *i;
-      out << "\\u00" << hexdigit((c >> 4) & 0xf) << hexdigit(c & 0xf);
+      Out << "\\u00" << hexdigit((c >> 4) & 0xf) << hexdigit(c & 0xf);
     }
-  out << "\"\n";
+  Out << "\"\n";
 }
 
 /**
@@ -187,7 +187,7 @@ void JVMWriter::printConstLoad(const std::string &str, bool cstring) {
  * 
  * @param c  the constant
  */
-void JVMWriter::printStaticConstant(const Constant *c) {
+void JasminWriter::printStaticConstant(const Constant *c) {
   if (isa<ConstantAggregateZero>(c) || c->isNullValue()) {
     // zero initialised constant
     printPtrLoad(dataLayout->getTypeAllocSize(c->getType()));
@@ -254,7 +254,7 @@ void JVMWriter::printStaticConstant(const Constant *c) {
  * 
  * @param ce  the constant expression
  */
-void JVMWriter::printConstantExpr(const ConstantExpr *ce) {
+void JasminWriter::printConstantExpr(const ConstantExpr *ce) {
   const Value *left, *right;
   if (ce->getNumOperands() >= 1) left = ce->getOperand(0);
   if (ce->getNumOperands() >= 2) right = ce->getOperand(1);

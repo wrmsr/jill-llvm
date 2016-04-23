@@ -29,14 +29,14 @@ using namespace llvm;
  * 
  * @param v  the value to load
  */
-void JVMWriter::printValueLoad(const Value *v) {
+void JasminWriter::printValueLoad(const Value *v) {
   if (const Function *f = dyn_cast<Function>(v)) {
     std::string sig = getValueName(f)
                       + getCallSignature(f->getFunctionType());
     if (externRefs.count(v))
       printSimpleInstruction("CLASSFORMETHOD", sig);
     else
-      printSimpleInstruction("ldc", '"' + classname + '"');
+      printSimpleInstruction("ldc", '"' + className + '"');
     printSimpleInstruction("ldc", '"' + sig + '"');
     printSimpleInstruction("invokestatic",
                            "lljvm/runtime/Function/getFunctionPointer"
@@ -47,7 +47,7 @@ void JVMWriter::printValueLoad(const Value *v) {
       printSimpleInstruction("getstatic", getValueName(v) + " I");
     else
       printSimpleInstruction("getstatic",
-                             classname + "/" + getValueName(v) + " I");
+                             className + "/" + getValueName(v) + " I");
   } else if (isa<ConstantPointerNull>(v)) {
     printPtrLoad(0);
   } else if (const ConstantExpr *ce = dyn_cast<ConstantExpr>(v)) {
@@ -73,7 +73,7 @@ void JVMWriter::printValueLoad(const Value *v) {
  * 
  * @param v  the Value representing the local variable
  */
-void JVMWriter::printValueStore(const Value *v) {
+void JasminWriter::printValueStore(const Value *v) {
   if (isa<Function>(v) || isa<GlobalVariable>(v) || isa<Constant>(v)) {
     errs() << "Value  = " << *v << '\n';
     llvm_unreachable("Invalid value");
@@ -105,7 +105,7 @@ void JVMWriter::printValueStore(const Value *v) {
  * 
  * @param v  the address
  */
-void JVMWriter::printIndirectLoad(const Value *v) {
+void JasminWriter::printIndirectLoad(const Value *v) {
   printValueLoad(v);
   const Type *ty = v->getType();
   if (const PointerType *p = dyn_cast<PointerType>(ty))
@@ -119,7 +119,7 @@ void JVMWriter::printIndirectLoad(const Value *v) {
  * 
  * @param ty  the type of the value
  */
-void JVMWriter::printIndirectLoad(const Type *ty) {
+void JasminWriter::printIndirectLoad(const Type *ty) {
   printSimpleInstruction("invokestatic", "lljvm/runtime/Memory/load_"
                                          + getTypePostfix(ty) + "(I)" + getTypeDescriptor(ty));
 }
@@ -130,7 +130,7 @@ void JVMWriter::printIndirectLoad(const Type *ty) {
  * @param ptr  the address at which to store the value
  * @param val  the value to store
  */
-void JVMWriter::printIndirectStore(const Value *ptr, const Value *val) {
+void JasminWriter::printIndirectStore(const Value *ptr, const Value *val) {
   printValueLoad(ptr);
   printValueLoad(val);
   printIndirectStore(val->getType());
@@ -141,7 +141,7 @@ void JVMWriter::printIndirectStore(const Value *ptr, const Value *val) {
  * 
  * @param ty  the type of the value
  */
-void JVMWriter::printIndirectStore(const Type *ty) {
+void JasminWriter::printIndirectStore(const Type *ty) {
   printSimpleInstruction("invokestatic",
                          "lljvm/runtime/Memory/store(I" + getTypeDescriptor(ty) + ")V");
 }

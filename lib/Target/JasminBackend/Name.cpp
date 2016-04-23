@@ -35,7 +35,7 @@ using namespace llvm;
  * @param name  the name to sanitize
  * @return      the sanitized name
  */
-std::string JVMWriter::sanitizeName(std::string name) {
+std::string JasminWriter::sanitizeName(std::string name) {
   for (std::string::iterator i = name.begin(), e = name.end(); i != e; i++)
     if (!isalnum(*i))
       *i = '_';
@@ -48,7 +48,7 @@ std::string JVMWriter::sanitizeName(std::string name) {
  * @param v  the value
  * @return   the name of the value
  */
-std::string JVMWriter::getValueName(const Value *v) {
+std::string JasminWriter::getValueName(const Value *v) {
   if (const GlobalValue *gv = dyn_cast<GlobalValue>(v)) {
     std::string s;
     raw_string_ostream rso(s);
@@ -68,7 +68,7 @@ std::string JVMWriter::getValueName(const Value *v) {
  * @param block  the block
  * @return       the label
  */
-std::string JVMWriter::getLabelName(const BasicBlock *block) {
+std::string JasminWriter::getLabelName(const BasicBlock *block) {
   if (!blockIDs.count(block))
     blockIDs[block] = blockIDs.size() + 1;
   return sanitizeName("label" + utostr(blockIDs[block]));
